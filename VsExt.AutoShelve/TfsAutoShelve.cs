@@ -91,19 +91,21 @@ namespace VsExt.AutoShelve {
             }
         }
 
+        public static bool IsValidWorkspace(string absolutepath) {
+            return (Workstation.Current.GetLocalWorkspaceInfo(absolutepath) != null);
+        }
+
         public string WorkingDirectory {
             get {
                 return _workingDirectory;
             }
             set {
                 _workingDirectory = value;
-                if (!string.IsNullOrWhiteSpace(value)) {
-                    Workspace = Workstation.Current.GetLocalWorkspaceInfo(value);
-                    if (OnWorkspaceChanged != null) {
-                        WorkspaceChangedEventArgs workSpaceDiscoveryEventArg = new WorkspaceChangedEventArgs();
-                        workSpaceDiscoveryEventArg.IsWorkspaceValid = (Workspace != null);
-                        OnWorkspaceChanged(this, workSpaceDiscoveryEventArg);
-                    }
+                Workspace = string.IsNullOrWhiteSpace(value) ? null : Workstation.Current.GetLocalWorkspaceInfo(value);
+                if (OnWorkspaceChanged != null) {
+                    WorkspaceChangedEventArgs workSpaceDiscoveryEventArg = new WorkspaceChangedEventArgs();
+                    workSpaceDiscoveryEventArg.IsWorkspaceValid = (Workspace != null);
+                    OnWorkspaceChanged(this, workSpaceDiscoveryEventArg);
                 }
             }
         }
@@ -244,11 +246,7 @@ namespace VsExt.AutoShelve {
 
         public void Terminate() {
             StopTimer();
-            if (OnWorkspaceChanged != null) {
-                WorkspaceChangedEventArgs workSpaceDiscoveryEventArg = new WorkspaceChangedEventArgs();
-                workSpaceDiscoveryEventArg.IsWorkspaceValid = false;
-                OnWorkspaceChanged(this, workSpaceDiscoveryEventArg);
-            }
+            WorkingDirectory = string.Empty;
         }
 
         public void ToggleTimerRunState() {
