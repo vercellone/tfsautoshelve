@@ -91,7 +91,7 @@ namespace VsExt.AutoShelve {
             DisplayRunState();
         }
 
-        private void autoShelve_OnWorkspaceDiscovery(object sender, WorkspaceChangedEventArgs e) {
+        private void autoShelve_OnWorkspaceChanged(object sender, WorkspaceChangedEventArgs e) {
             _menuAutoShelveNow.Enabled = e.IsWorkspaceValid;
             _menuRunState.Enabled = e.IsWorkspaceValid;
         }
@@ -104,7 +104,7 @@ namespace VsExt.AutoShelve {
                 _autoShelve.OnTfsConnectionError -= new EventHandler(autoShelve_OnTfsConnectionError);
                 _autoShelve.OnTimerStart -= new EventHandler(autoShelve_OnTimerStart);
                 _autoShelve.OnTimerStop -= new EventHandler(autoShelve_OnTimerStop);
-                _autoShelve.OnWorkspaceChanged -= new EventHandler<WorkspaceChangedEventArgs>(autoShelve_OnWorkspaceDiscovery);
+                _autoShelve.OnWorkspaceChanged -= new EventHandler<WorkspaceChangedEventArgs>(autoShelve_OnWorkspaceChanged);
                 _options.OnOptionsChanged -= new EventHandler<OptionsChangedEventArgs>(Options_OnOptionsChanged);
             }
             if (_solutionService != null) {
@@ -132,7 +132,7 @@ namespace VsExt.AutoShelve {
                 _autoShelve.OnTfsConnectionError += new EventHandler(autoShelve_OnTfsConnectionError);
                 _autoShelve.OnTimerStart += new EventHandler(autoShelve_OnTimerStart);
                 _autoShelve.OnTimerStop += new EventHandler(autoShelve_OnTimerStop);
-                _autoShelve.OnWorkspaceChanged += new EventHandler<WorkspaceChangedEventArgs>(autoShelve_OnWorkspaceDiscovery);
+                _autoShelve.OnWorkspaceChanged += new EventHandler<WorkspaceChangedEventArgs>(autoShelve_OnWorkspaceChanged);
 
                 // Property Initialization
                 _autoShelve.MaximumShelvesets = _options.MaximumShelvesets;
@@ -150,7 +150,7 @@ namespace VsExt.AutoShelve {
                     _autoShelve.OnTfsConnectionError -= new EventHandler(autoShelve_OnTfsConnectionError);
                     _autoShelve.OnTimerStart -= new EventHandler(autoShelve_OnTimerStart);
                     _autoShelve.OnTimerStop -= new EventHandler(autoShelve_OnTimerStop);
-                    _autoShelve.OnWorkspaceChanged -= new EventHandler<WorkspaceChangedEventArgs>(autoShelve_OnWorkspaceDiscovery);
+                    _autoShelve.OnWorkspaceChanged -= new EventHandler<WorkspaceChangedEventArgs>(autoShelve_OnWorkspaceChanged);
                 }
             }
         }

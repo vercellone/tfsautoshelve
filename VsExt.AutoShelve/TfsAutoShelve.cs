@@ -103,9 +103,9 @@ namespace VsExt.AutoShelve {
                 _workingDirectory = value;
                 Workspace = string.IsNullOrWhiteSpace(value) ? null : Workstation.Current.GetLocalWorkspaceInfo(value);
                 if (OnWorkspaceChanged != null) {
-                    WorkspaceChangedEventArgs workSpaceDiscoveryEventArg = new WorkspaceChangedEventArgs();
-                    workSpaceDiscoveryEventArg.IsWorkspaceValid = (Workspace != null);
-                    OnWorkspaceChanged(this, workSpaceDiscoveryEventArg);
+                        WorkspaceChangedEventArgs workspaceChangedEventArg = new WorkspaceChangedEventArgs();
+                        workspaceChangedEventArg.IsWorkspaceValid = (Workspace != null);
+                        OnWorkspaceChanged(this, workspaceChangedEventArg);
                 }
             }
         }
