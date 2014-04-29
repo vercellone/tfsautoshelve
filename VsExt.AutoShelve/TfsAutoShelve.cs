@@ -100,9 +100,9 @@ namespace VsExt.AutoShelve {
                 if (!string.IsNullOrWhiteSpace(value)) {
                     Workspace = Workstation.Current.GetLocalWorkspaceInfo(value);
                     if (OnWorkspaceChanged != null) {
-                        WorkspaceChangedEventArgs workSpaceDiscoveryEventArg = new WorkspaceChangedEventArgs();
-                        workSpaceDiscoveryEventArg.IsWorkspaceValid = (Workspace != null);
-                        OnWorkspaceChanged(this, workSpaceDiscoveryEventArg);
+                        WorkspaceChangedEventArgs workspaceChangedEventArg = new WorkspaceChangedEventArgs();
+                        workspaceChangedEventArg.IsWorkspaceValid = (Workspace != null);
+                        OnWorkspaceChanged(this, workspaceChangedEventArg);
                     }
                 }
             }
@@ -245,9 +245,9 @@ namespace VsExt.AutoShelve {
         public void Terminate() {
             StopTimer();
             if (OnWorkspaceChanged != null) {
-                WorkspaceChangedEventArgs workSpaceDiscoveryEventArg = new WorkspaceChangedEventArgs();
-                workSpaceDiscoveryEventArg.IsWorkspaceValid = false;
-                OnWorkspaceChanged(this, workSpaceDiscoveryEventArg);
+                WorkspaceChangedEventArgs workspaceChangedEventArg = new WorkspaceChangedEventArgs();
+                workspaceChangedEventArg.IsWorkspaceValid = false;
+                OnWorkspaceChanged(this, workspaceChangedEventArg);
             }
         }
 
