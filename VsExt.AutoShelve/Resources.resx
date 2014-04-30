@@ -128,7 +128,7 @@
     <value>Images\AutoShelve.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="ErrorNotConnected" xml:space="preserve">
-    <value>Team Project not found.  Check your TFS connection and source control bindings.</value>
+    <value>Please connect to a Team Project first.</value>
   </data>
   <data name="ExtensionName" xml:space="preserve">
     <value>TFS Auto Shelve</value>

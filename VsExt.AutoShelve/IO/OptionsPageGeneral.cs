@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
@@ -9,36 +9,35 @@ namespace VsExt.AutoShelve {
     [ComVisible(true)]
     [Guid("0f98bfc6-8c54-426a-94f5-256df616a90a")]
     public class OptionsPageGeneral : DialogPage {
-
-        protected const string GENERAL_CAT = "General";
-
+        
         #region Properties
 
         private string _name;
 
-        [Category(GENERAL_CAT)]
-        [DisplayName("Shelveset Name")]
-        [Description("Shelve set name used as a string.Format input value where {0}=WorkspaceInfo.Name, {1}=WorkspaceInfo.OwnerName, {2}=DateTime.Now.  IMPORTANT: If you use multiple workspaces, and don't include WorkspaceInfo.Name then only the pending changes in the last workspace will be included in the shelveset. Anything greater than 64 characters will be truncated!")]
-        public string ShelvesetName {
+        [Category("Auto Shelve Settings")]
+        [Description("Shelve set name used as a string.Format input value where {0}=WorkspaceInfo.Name, {1}=WorkspaceInfo.OwnerName, {2}=DateTime.Now.  Anything greater than 64 characters will be truncated!")]
+        public string ShelveSetName {
             get {
                 return _name;
             }
             set {
+                if (value.Length >= 30) {
+                    WinFormsHelper.ShowMessageBox("Name will be truncated to 64 characters.", "Warning - TFS Auto Shelve Settings", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
                 _name = value;
             }
         }
 
         private int _interval;
 
-        [Category(GENERAL_CAT)]
-        [DisplayName("Interval")]
+        [Category("Auto Shelve Settings")]
         [Description("The interval (in minutes) between shelvesets when running.")]
         public int TimerSaveInterval {
             get {
                 return _interval;
             }
             set {
-                if (value <= 0) {
+                if (value <=0) {
                     WinFormsHelper.ShowMessageBox("TimerSaveInterval must be greater than 0.", "Error - TFS Auto Shelve Settings", MessageBoxButtons.OK, MessageBoxIcon.Hand);
                 } else {
                     _interval = value;
@@ -46,63 +45,25 @@ namespace VsExt.AutoShelve {
             }
         }
 
-        private bool _suppressDialogs;
-
-        [Category(GENERAL_CAT)]
-        [DisplayName("Suppress Dialogs")]
-        [Description("Suppress run time dialogs.  Currently just the nagging 'Please connect to a Team Project first.' MessageBox")]
-        public bool SuppressDialogs {
-            get {
-                return _suppressDialogs;
-            }
-            set {
-                _suppressDialogs = value;
-            }
-        }
-        private ushort _maxSets;
-
-        [Category(GENERAL_CAT)]
-        [DisplayName("Μaximum Shelvesets")]
-        [Description("Maximum number of shelvesets to retain.  Older shelvesets will be deleted. 0=Disabled. Note: ShelvesetName must include a {2} (DateTime.Now component) unique enough to generate more than the maximum for this to have any impact.  If {0} (WorkspaceInfo.Name) is included, then the max is applied per workspace.")]
-        public ushort MaximumShelvesets
-        {
-            get {
-                return _maxSets;
-            }
-            set {
-                _maxSets = value;
-            }
-        }
-
         #endregion
 
         public OptionsPageGeneral() {
-            _maxSets = 0;
-            _name = "Auto {0}";
+            _name = "Auto-{1}";
             _interval = 5;
-            _suppressDialogs = true;
         }
 
         protected override void OnApply(DialogPage.PageApplyEventArgs e) {
             base.OnApply(e);
             bool flag = OnOptionsChanged == null;
             if (!flag) {
-                OptionsChangedEventArgs optionsEventArg = new OptionsChangedEventArgs();
+                OptionsEventArgs optionsEventArg = new OptionsEventArgs();
+                optionsEventArg.ShelveSetName = ShelveSetName;
                 optionsEventArg.Interval = TimerSaveInterval;
-                optionsEventArg.MaximumShelvesets = MaximumShelvesets;
-                optionsEventArg.ShelvesetName = ShelvesetName;
-                optionsEventArg.SuppressDialogs = SuppressDialogs;
-                OnOptionsChanged(this, optionsEventArg);
+                OptionsEventArgs optionsEventArg1 = optionsEventArg;
+                OnOptionsChanged(this, optionsEventArg1);
             }
         }
 
-        public event EventHandler<OptionsChangedEventArgs> OnOptionsChanged;
-
-        //protected virtual IWin32Window Window {
-        //    get {
-        //        return new OptionsToolWindow().Window;
-        //    }
-        //}
-
-     }
+        public event EventHandler<OptionsEventArgs> OnOptionsChanged;
+    }
 }
