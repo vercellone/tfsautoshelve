@@ -19,11 +19,54 @@ namespace VsExt.AutoShelve {
         private string _extensionName;
         private TeamFoundationServerExt _tfsExt;
         private Timer _timer;
+        private bool _isDate;
+        private bool _isWorkspace;
+        private ushort _maxShelvesets;
         private int _timerInterval;
+        private string _shelvesetName;
+        private bool _supressDialogs;
         private string _workingDirectory;
 
         public bool IsRunning;
-        public string ShelveSetName;
+
+        public string ShelvesetName {
+            get {
+                return _shelvesetName;
+            }
+            set {
+                _shelvesetName = value;
+                _isDate = string.Format(ShelvesetName, null, null, "IsDate").Contains("IsDate");
+                _isWorkspace = string.Format(ShelvesetName, "IsWorkspace", null, null).Contains("IsWorkspace");
+            }
+        }
+
+        public bool IsDateSpecificShelvesetName {
+            get {
+                return _isDate;
+            }
+        }
+        public bool IsWorkspaceSpecificShelvesetName {
+            get {
+                return _isWorkspace;
+            }
+        }
+        public ushort MaximumShelvesets {
+            get {
+                return (_isDate) ? _maxShelvesets : (ushort)0;
+            }
+            set {
+                _maxShelvesets = value;
+            }
+        }
+
+        public bool SuppressDialogs {
+            get {
+                return _supressDialogs;
+            }
+            set {
+                _supressDialogs = value;
+            }
+        }
 
         public int TimerInterval {
             get {
@@ -47,19 +90,21 @@ namespace VsExt.AutoShelve {
             }
         }
 
+        public static bool IsValidWorkspace(string absolutepath) {
+            return (Workstation.Current.GetLocalWorkspaceInfo(absolutepath) != null);
+        }
+
         public string WorkingDirectory {
             get {
                 return _workingDirectory;
             }
             set {
                 _workingDirectory = value;
-                if (!string.IsNullOrWhiteSpace(value)) {
-                    Workspace = Workstation.Current.GetLocalWorkspaceInfo(value);
-                    if (OnWorkSpaceDiscovery != null) {
-                        WorkSpaceDiscoveryEventArgs workSpaceDiscoveryEventArg = new WorkSpaceDiscoveryEventArgs();
-                        workSpaceDiscoveryEventArg.IsWorkspaceDiscovered = (Workspace != null);
-                        OnWorkSpaceDiscovery(this, workSpaceDiscoveryEventArg);
-                    }
+                Workspace = string.IsNullOrWhiteSpace(value) ? null : Workstation.Current.GetLocalWorkspaceInfo(value);
+                if (OnWorkspaceChanged != null) {
+                        WorkspaceChangedEventArgs workspaceChangedEventArg = new WorkspaceChangedEventArgs();
+                        workspaceChangedEventArg.IsWorkspaceValid = (Workspace != null);
+                        OnWorkspaceChanged(this, workspaceChangedEventArg);
                 }
             }
         }
@@ -72,7 +117,7 @@ namespace VsExt.AutoShelve {
             InitializeTimer();
         }
 
-        private string CleanShelveSetName(string shelvesetName) {
+        private string CleanShelvesetName(string shelvesetName) {
             if (!string.IsNullOrWhiteSpace(shelvesetName)) {
                 string cleanName = shelvesetName.Replace("/", string.Empty).Replace(":", string.Empty).Replace("<", string.Empty).Replace(">", string.Empty).Replace("\\", string.Empty).Replace("|", string.Empty).Replace("*", string.Empty).Replace("?", string.Empty).Replace(";", string.Empty);
                 if (cleanName.Length > 64) {
@@ -83,7 +128,7 @@ namespace VsExt.AutoShelve {
             return shelvesetName;
         }
 
-        public void CreateShelveSet() {
+        public void CreateShelveset() {
             TimerCallback autoShelveCallback = GetAutoShelveCallback();
             autoShelveCallback(new object());
         }
@@ -123,7 +168,6 @@ namespace VsExt.AutoShelve {
         }
 
         public void SaveShelveset() {
-            AutoShelveEventArgs autoShelveEventArg = new AutoShelveEventArgs();
             try {
                 if (TfsExt != null) {
                     string domainUri = _tfsExt.ActiveProjectContext.DomainUri;
@@ -140,26 +184,42 @@ namespace VsExt.AutoShelve {
                         if (workspaceInfo.MappedPaths.Length > 0 && workspaceInfo.ServerUri.ToString().Replace("/", string.Empty) == domainUri.Replace("/", string.Empty)) {
                             Workspace workspace = service.GetWorkspace(workspaceInfo);
                             PendingChange[] pendingChanges = workspace.GetPendingChanges();
+
                             int numPending = pendingChanges.Count<PendingChange>();
                             if (numPending > 0) {
-                                string setname = string.Format(ShelveSetName, workspaceInfo.Name, workspaceInfo.OwnerName, DateTime.Now);
-                                setname = CleanShelveSetName(setname);
+                                ShelvesetCreatedEventArgs autoShelveEventArg = new ShelvesetCreatedEventArgs();
+                                string setname = string.Format(ShelvesetName, workspaceInfo.Name, workspaceInfo.OwnerName, DateTime.Now);
+                                setname = CleanShelvesetName(setname);
 
                                 Shelveset shelveset = new Shelveset(service, setname, workspaceInfo.OwnerName);
-                                autoShelveEventArg.ShelvesetCount += numPending;
+                                autoShelveEventArg.ShelvesetChangeCount += numPending;
                                 autoShelveEventArg.ShelvesetName = setname;
 
                                 shelveset.Comment = string.Format("Shelved by {0}. Items in shelve set: {1}", _extensionName, numPending);
                                 workspace.Shelve(shelveset, pendingChanges, ShelvingOptions.Replace);
+                                if (MaximumShelvesets > 0) {
+                                    var autoShelvesets = service.QueryShelvesets(null, workspaceInfo.OwnerName).Where(s => s.Comment != null && s.Comment.Contains(_extensionName));
+                                    if (IsWorkspaceSpecificShelvesetName) {
+                                        autoShelvesets = autoShelvesets.Where(s => s.Name.Contains(workspaceInfo.Name));
+                                    }
+                                    foreach (Shelveset set in autoShelvesets.OrderByDescending(s => s.CreationDate).Skip(MaximumShelvesets)) {
+                                        service.DeleteShelveset(set);
+                                        autoShelveEventArg.ShelvesetsPurgeCount++;
+                                    }
+                                }
+                                if (OnShelvesetCreated != null) {
+                                    OnShelvesetCreated(this, autoShelveEventArg);
+                                }
                             }
                         }
                     }
                 }
             } catch (Exception ex) {
-                autoShelveEventArg.ExecutionException = ex;
-            }
-            if (OnExecution != null) {
-                OnExecution(this, autoShelveEventArg);
+                if (OnShelvesetCreated != null) {
+                    ShelvesetCreatedEventArgs autoShelveEventArg = new ShelvesetCreatedEventArgs();
+                    autoShelveEventArg.ExecutionException = ex;
+                    OnShelvesetCreated(this, autoShelveEventArg);
+                }
             }
         }
 
@@ -183,11 +243,7 @@ namespace VsExt.AutoShelve {
 
         public void Terminate() {
             StopTimer();
-            if (OnWorkSpaceDiscovery != null) {
-                WorkSpaceDiscoveryEventArgs workSpaceDiscoveryEventArg = new WorkSpaceDiscoveryEventArgs();
-                workSpaceDiscoveryEventArg.IsWorkspaceDiscovered = false;
-                OnWorkSpaceDiscovery(this, workSpaceDiscoveryEventArg);
-            }
+            WorkingDirectory = string.Empty;
         }
 
         public void ToggleTimerRunState() {
@@ -198,7 +254,7 @@ namespace VsExt.AutoShelve {
             }
         }
 
-        public event EventHandler<AutoShelveEventArgs> OnExecution;
+        public event EventHandler<ShelvesetCreatedEventArgs> OnShelvesetCreated;
 
         public event EventHandler OnTfsConnectionError;
 
@@ -206,7 +262,7 @@ namespace VsExt.AutoShelve {
 
         public event EventHandler OnTimerStop;
 
-        public event EventHandler<WorkSpaceDiscoveryEventArgs> OnWorkSpaceDiscovery;
+        public event EventHandler<WorkspaceChangedEventArgs> OnWorkspaceChanged;
 
         public void Dispose() {
             Dispose(true);

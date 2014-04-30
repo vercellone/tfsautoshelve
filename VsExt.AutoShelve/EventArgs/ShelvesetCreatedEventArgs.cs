@@ -1,7 +1,7 @@
 using System;
 
 namespace VsExt.AutoShelve {
-    public class AutoShelveEventArgs : EventArgs {
+    public class ShelvesetCreatedEventArgs : EventArgs {
         public Exception ExecutionException { get; set; }
 
         public bool ExecutionSuccess {
@@ -10,10 +10,12 @@ namespace VsExt.AutoShelve {
             }
         }
 
-        public int ShelvesetCount { get; set; }
+        public int ShelvesetChangeCount { get; set; }
+        
+        public int ShelvesetsPurgeCount { get; set; }
 
         public string ShelvesetName { get; set; }
 
-        public AutoShelveEventArgs() { }
+        public ShelvesetCreatedEventArgs() { }
     }
 }

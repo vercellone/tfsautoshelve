@@ -29,7 +29,7 @@ namespace VsExt.AutoShelve {
     [ProvideOptionPage(typeof(OptionsPageGeneral), "TFS Auto Shelve", "General", 101, 106, true)]
     // This attribute is used to register the information needed to show this package
     // in the Help/About dialog of Visual Studio.
-    [InstalledProductRegistration("#110", "#112", "2.1", IconResourceID = 400)]
+    [InstalledProductRegistration("#110", "#112", "2.2", IconResourceID = 400)]
     [Guid(GuidList.guidAutoShelvePkgString)]
     public class VsExtAutoShelvePackage : Package, IVsSolutionEvents, IDisposable {
 
@@ -60,9 +60,12 @@ namespace VsExt.AutoShelve {
         // Overridden Package Implementation
         #region Package Members
 
-        private void autoShelve_OnAutoShelveExecution(object sender, AutoShelveEventArgs e) {
+        private void autoShelve_OnShelvesetCreated(object sender, ShelvesetCreatedEventArgs e) {
             if (e.ExecutionSuccess) {
-                string str = string.Format("{0} shelved {1} pending changes. Shelveset Name: {2}", _extName, e.ShelvesetCount, e.ShelvesetName);
+                string str = string.Format("Shelved {0} pending changes to Shelveset Name: {1}", e.ShelvesetChangeCount, e.ShelvesetName);
+                if (e.ShelvesetsPurgeCount > 0) {
+                    str += string.Format("; MaximumShelvesets={0}: Deleted: {1}", _autoShelve.MaximumShelvesets, e.ShelvesetsPurgeCount);
+                }
                 WriteToStatusBar(str);
                 WriteToOutputWindow(str);
             } else {
@@ -74,7 +77,10 @@ namespace VsExt.AutoShelve {
         }
 
         private void autoShelve_OnTfsConnectionError(object sender, EventArgs e) {
-            MessageBox.Show(Resources.ErrorNotConnected, _extName, MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+            WriteToOutputWindow(Resources.ErrorNotConnected);
+            if (!_autoShelve.SuppressDialogs) {
+                MessageBox.Show(Resources.ErrorNotConnected, _extName, MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+            }
         }
 
         private void autoShelve_OnTimerStart(object sender, EventArgs e) {
@@ -85,21 +91,21 @@ namespace VsExt.AutoShelve {
             DisplayRunState();
         }
 
-        private void autoShelve_OnWorkSpaceDiscovery(object sender, WorkSpaceDiscoveryEventArgs e) {
-            _menuAutoShelveNow.Enabled = e.IsWorkspaceDiscovered;
-            _menuRunState.Enabled = e.IsWorkspaceDiscovered;
+        private void autoShelve_OnWorkspaceChanged(object sender, WorkspaceChangedEventArgs e) {
+            _menuAutoShelveNow.Enabled = e.IsWorkspaceValid;
+            _menuRunState.Enabled = e.IsWorkspaceValid;
         }
 
         private void DetachAutoShelveEvents() {
             if (_autoShelve != null) {
-                _autoShelve.CreateShelveSet();
+                _autoShelve.CreateShelveset();
                 _autoShelve.Terminate();
-                _autoShelve.OnExecution -= new EventHandler<AutoShelveEventArgs>(autoShelve_OnAutoShelveExecution);
+                _autoShelve.OnShelvesetCreated -= new EventHandler<ShelvesetCreatedEventArgs>(autoShelve_OnShelvesetCreated);
                 _autoShelve.OnTfsConnectionError -= new EventHandler(autoShelve_OnTfsConnectionError);
                 _autoShelve.OnTimerStart -= new EventHandler(autoShelve_OnTimerStart);
                 _autoShelve.OnTimerStop -= new EventHandler(autoShelve_OnTimerStop);
-                _autoShelve.OnWorkSpaceDiscovery -= new EventHandler<WorkSpaceDiscoveryEventArgs>(autoShelve_OnWorkSpaceDiscovery);
-                _options.OnOptionsChanged -= new EventHandler<OptionsEventArgs>(Options_OnOptionsChanged);
+                _autoShelve.OnWorkspaceChanged -= new EventHandler<WorkspaceChangedEventArgs>(autoShelve_OnWorkspaceChanged);
+                _options.OnOptionsChanged -= new EventHandler<OptionsChangedEventArgs>(Options_OnOptionsChanged);
             }
             if (_solutionService != null) {
                 _solutionService.UnadviseSolutionEvents(_solutionEventsCookie);
@@ -113,35 +119,38 @@ namespace VsExt.AutoShelve {
             ToggleMenuCommandRunStateText(_menuRunState);
         }
 
-        private void InitializeAutoShelve() {
+        private void InitializeAutoShelve(string workingDirectory) {
+            InitializeSolutionServiceEvents();
             try {
                 _autoShelve = new TfsAutoShelve(_extName, _dte);
 
                 // Tools->Options event wire-up
-                _options.OnOptionsChanged += new EventHandler<OptionsEventArgs>(Options_OnOptionsChanged);
+                _options.OnOptionsChanged += new EventHandler<OptionsChangedEventArgs>(Options_OnOptionsChanged);
 
                 // Event Wire-up
-                _autoShelve.OnExecution += new EventHandler<AutoShelveEventArgs>(autoShelve_OnAutoShelveExecution);
+                _autoShelve.OnShelvesetCreated += new EventHandler<ShelvesetCreatedEventArgs>(autoShelve_OnShelvesetCreated);
                 _autoShelve.OnTfsConnectionError += new EventHandler(autoShelve_OnTfsConnectionError);
                 _autoShelve.OnTimerStart += new EventHandler(autoShelve_OnTimerStart);
                 _autoShelve.OnTimerStop += new EventHandler(autoShelve_OnTimerStop);
-                _autoShelve.OnWorkSpaceDiscovery += new EventHandler<WorkSpaceDiscoveryEventArgs>(autoShelve_OnWorkSpaceDiscovery);
+                _autoShelve.OnWorkspaceChanged += new EventHandler<WorkspaceChangedEventArgs>(autoShelve_OnWorkspaceChanged);
 
                 // Property Initialization
-                _autoShelve.ShelveSetName = _options.ShelveSetName;
+                _autoShelve.MaximumShelvesets = _options.MaximumShelvesets;
+                _autoShelve.ShelvesetName = _options.ShelvesetName;
                 _autoShelve.TimerInterval = _options.TimerSaveInterval;
-                _autoShelve.WorkingDirectory = Directory.GetParent(_dte.Solution.FullName).FullName;
+                _autoShelve.SuppressDialogs = _options.SuppressDialogs;
+                _autoShelve.WorkingDirectory = workingDirectory;
 
                 _autoShelve.StartTimer();
             } catch {
                 if (_autoShelve != null) {
-                    _options.OnOptionsChanged -= new EventHandler<OptionsEventArgs>(Options_OnOptionsChanged);
+                    _options.OnOptionsChanged -= new EventHandler<OptionsChangedEventArgs>(Options_OnOptionsChanged);
 
-                    _autoShelve.OnExecution -= new EventHandler<AutoShelveEventArgs>(autoShelve_OnAutoShelveExecution);
+                    _autoShelve.OnShelvesetCreated -= new EventHandler<ShelvesetCreatedEventArgs>(autoShelve_OnShelvesetCreated);
                     _autoShelve.OnTfsConnectionError -= new EventHandler(autoShelve_OnTfsConnectionError);
                     _autoShelve.OnTimerStart -= new EventHandler(autoShelve_OnTimerStart);
                     _autoShelve.OnTimerStop -= new EventHandler(autoShelve_OnTimerStop);
-                    _autoShelve.OnWorkSpaceDiscovery -= new EventHandler<WorkSpaceDiscoveryEventArgs>(autoShelve_OnWorkSpaceDiscovery);
+                    _autoShelve.OnWorkspaceChanged -= new EventHandler<WorkspaceChangedEventArgs>(autoShelve_OnWorkspaceChanged);
                 }
             }
         }
@@ -235,11 +244,28 @@ namespace VsExt.AutoShelve {
 
         public int OnAfterLoadProject(IVsHierarchy pStubHierarchy, IVsHierarchy pRealHierarchy) { return 0; }
 
-        public int OnAfterOpenProject(IVsHierarchy pHierarchy, int fAdded) { return 0; }
+        public int OnAfterOpenProject(IVsHierarchy pHierarchy, int fAdded) {
+            if (_autoShelve == null || _autoShelve.Workspace == null) {
+                object projectObj;
+                pHierarchy.GetProperty(Microsoft.VisualStudio.VSConstants.VSITEMID_ROOT, (int)__VSHPROPID.VSHPROPID_ExtObject, out projectObj);
+                var project = (Project)projectObj;
+                if (!string.IsNullOrWhiteSpace(project.FullName)) {
+                    string projDirectory = System.IO.Path.GetDirectoryName(project.FullName);
+                    if (TfsAutoShelve.IsValidWorkspace(projDirectory)) {
+                        InitializeAutoShelve(projDirectory);
+                    }
+                }
+            }
+            return 0;
+        }
 
         public int OnAfterOpenSolution(object pUnkReserved, int fNewSolution) {
-            InitializeSolutionServiceEvents();
-            InitializeAutoShelve();
+            if (!string.IsNullOrWhiteSpace(_dte.Solution.FullName)) {
+                string slnDirectory = System.IO.Path.GetDirectoryName(_dte.Solution.FullName);
+                if (TfsAutoShelve.IsValidWorkspace(slnDirectory)) {
+                    InitializeAutoShelve(slnDirectory);
+                }
+            }
             return 0;
         }
 
@@ -259,10 +285,12 @@ namespace VsExt.AutoShelve {
 
         #region Local Methods
 
-        private void Options_OnOptionsChanged(object sender, OptionsEventArgs e) {
+        private void Options_OnOptionsChanged(object sender, OptionsChangedEventArgs e) {
             if (_autoShelve != null) {
+                _autoShelve.MaximumShelvesets = e.MaximumShelvesets;
+                _autoShelve.ShelvesetName = e.ShelvesetName;
+                _autoShelve.SuppressDialogs = e.SuppressDialogs;
                 _autoShelve.TimerInterval = e.Interval;
-                _autoShelve.ShelveSetName = e.ShelveSetName;
             }
         }
 

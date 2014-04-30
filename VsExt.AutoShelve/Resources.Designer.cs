@@ -89,7 +89,7 @@ namespace VsExt {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Please connect to a Team Project first..
+        ///   Looks up a localized string similar to Team Project not found.  Check your TFS connection and source control bindings..
         /// </summary>
         internal static string ErrorNotConnected {
             get {

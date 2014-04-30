@@ -89,10 +89,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IO\ActivityLog.cs" />
-    <Compile Include="EventArgs\AutoShelveEventArgs.cs" />
-    <Compile Include="EventArgs\WorkSpaceDiscoveryEventArgs.cs" />
+    <Compile Include="EventArgs\ShelvesetCreatedEventArgs.cs" />
+    <Compile Include="EventArgs\WorkspaceChangedEventArgs.cs" />
     <Compile Include="Packaging\Guids.cs" />
-    <Compile Include="EventArgs\OptionsEventArgs.cs" />
+    <Compile Include="EventArgs\OptionsChangedEventArgs.cs" />
     <Compile Include="IO\OptionsPageGeneral.cs">
       <SubType>Component</SubType>
     </Compile>
