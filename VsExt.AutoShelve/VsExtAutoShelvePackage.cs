@@ -29,7 +29,7 @@ namespace VsExt.AutoShelve {
     [ProvideOptionPage(typeof(OptionsPageGeneral), "TFS Auto Shelve", "General", 101, 106, true)]
     // This attribute is used to register the information needed to show this package
     // in the Help/About dialog of Visual Studio.
-    [InstalledProductRegistration("#110", "#112", "3.5", IconResourceID = 400)]
+    [InstalledProductRegistration("#110", "#112", "3.6", IconResourceID = 400)]
     [Guid(GuidList.guidAutoShelvePkgString)]
     public class VsExtAutoShelvePackage : Package, IVsSolutionEvents, IDisposable {
 
