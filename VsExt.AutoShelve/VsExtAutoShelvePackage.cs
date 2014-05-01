@@ -62,9 +62,10 @@ namespace VsExt.AutoShelve {
 
         private void autoShelve_OnShelvesetCreated(object sender, ShelvesetCreatedEventArgs e) {
             if (e.ExecutionSuccess) {
-                string str = string.Format("Shelved {0} pending changes to Shelveset Name: {1}", e.ShelvesetChangeCount, e.ShelvesetName);
+              string str = string.Format("Shelved {0} pending change{1} to Shelveset Name: {2}", e.ShelvesetChangeCount, 
+                e.ShelvesetChangeCount != 1 ? "s" :"", e.ShelvesetName);
                 if (e.ShelvesetsPurgeCount > 0) {
-                    str += string.Format("; MaximumShelvesets={0}: Deleted: {1}", _autoShelve.MaximumShelvesets, e.ShelvesetsPurgeCount);
+                    str += string.Format(" | Maximum Shelvesets: {0} | Deleted: {1}", _autoShelve.MaximumShelvesets, e.ShelvesetsPurgeCount);
                 }
                 WriteToStatusBar(str);
                 WriteToOutputWindow(str);
