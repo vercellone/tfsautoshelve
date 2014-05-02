@@ -38,15 +38,19 @@ namespace VsExt.AutoShelve.IO {
         [Category(GeneralCat), DisplayName(@"Suppress Dialogs"), Description("Suppress run time dialogs.  Currently just the nagging 'Please connect to a Team Project first.' MessageBox")]
         public bool SuppressDialogs { get; set; }
 
+        [Category(GENERAL_CAT), DisplayName(@"Output Pane"), Description("Output window pane to write status messages.  If you set this to an empty string, nothing is written to the Output window.  Note: Regardless, the output pane is no longer explicitly activated.  So, no more focus stealing!")]
+        public string OutputPane { get; set; }
+
         [Category(GeneralCat), DisplayName(@"Μaximum Shelvesets"), Description("Maximum number of shelvesets to retain.  Older shelvesets will be deleted. 0=Disabled. Note: ShelvesetName must include a {2} (DateTime.Now component) unique enough to generate more than the maximum for this to have any impact.  If {0} (WorkspaceInfo.Name) is included, then the max is applied per workspace.")]
         public ushort MaximumShelvesets { get; set; }
 
         #endregion
 
         public OptionsPageGeneral() {
+            OutputPane = "TFS Auto Shelve";
             MaximumShelvesets = 0;
             ShelvesetName = "Auto {0}";
-            _interval = 5;
+            TimerSaveInterval = 5;
             SuppressDialogs = true;
         }
 
@@ -58,6 +62,7 @@ namespace VsExt.AutoShelve.IO {
                 {
                     Interval = TimerSaveInterval,
                     MaximumShelvesets = MaximumShelvesets,
+                	optionsEventArg.OutputPane = OutputPane;
                     ShelvesetName = ShelvesetName,
                     SuppressDialogs = SuppressDialogs
                 };
