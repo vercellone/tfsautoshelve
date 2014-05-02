@@ -59,6 +59,10 @@ namespace VsExt.AutoShelve {
                 _suppressDialogs = value;
             }
         }
+
+        [Category(GENERAL_CAT), DisplayName(@"Output Pane"), Description("Output window pane to write status messages.  If you set this to an empty string, nothing is written to the Output window.  Note: Regardless, the output pane is no longer explicitly activated.  So, no more focus stealing!")]
+        public string OutputPane { get; set; }
+
         private ushort _maxSets;
 
         [Category(GENERAL_CAT)]
@@ -77,6 +81,7 @@ namespace VsExt.AutoShelve {
         #endregion
 
         public OptionsPageGeneral() {
+            OutputPane = "TFS Auto Shelve";
             _maxSets = 0;
             _name = "Auto {0}";
             _interval = 5;
@@ -90,6 +95,7 @@ namespace VsExt.AutoShelve {
                 OptionsChangedEventArgs optionsEventArg = new OptionsChangedEventArgs();
                 optionsEventArg.Interval = TimerSaveInterval;
                 optionsEventArg.MaximumShelvesets = MaximumShelvesets;
+                optionsEventArg.OutputPane = OutputPane;
                 optionsEventArg.ShelvesetName = ShelvesetName;
                 optionsEventArg.SuppressDialogs = SuppressDialogs;
                 OnOptionsChanged(this, optionsEventArg);
