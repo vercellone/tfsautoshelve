@@ -6,38 +6,39 @@ ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY
 IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR
 PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.
 ***************************************************************************/
-using System;
-using System.Collections;
-using System.Text;
-using System.Reflection;
 using Microsoft.VsSDK.UnitTestLibrary;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.VSSDK.Tools.VsIdeTesting;
 using VsExt.AutoShelve;
 
 namespace VsExt.AutoShelve_UnitTests {
-    [TestClass()]
+    [TestClass]
     public class PackageTest {
-        [TestMethod()]
+        [TestMethod]
         public void CreateInstance() {
-            VsExtAutoShelvePackage package = new VsExtAutoShelvePackage();
+            var package = new VsExtAutoShelvePackage();
+            Assert.IsNotNull(package);
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void IsIVsPackage() {
-            VsExtAutoShelvePackage package = new VsExtAutoShelvePackage();
+            var package = new VsExtAutoShelvePackage();
+// ReSharper disable once RedundantCast
             Assert.IsNotNull(package as IVsPackage, "The object does not implement IVsPackage");
         }
 
-        [TestMethod()]
+        [TestMethod]
         public void SetSite() {
             // Create the package
-            IVsPackage package = new VsExtAutoShelvePackage() as IVsPackage;
+            var package = new VsExtAutoShelvePackage() as IVsPackage;
             Assert.IsNotNull(package, "The object does not implement IVsPackage");
 
             // Create a basic service provider
-            OleServiceProvider serviceProvider = OleServiceProvider.CreateOleServiceProviderWithBasicServices();
+            var serviceProvider = OleServiceProvider.CreateOleServiceProviderWithBasicServices();
+
+            var activityLogMock = new GenericMockFactory("MockVsActivityLog", new[] { typeof(Microsoft.VisualStudio.Shell.Interop.IVsActivityLog) }).GetInstance();
+
+            serviceProvider.AddService(typeof (Microsoft.VisualStudio.Shell.Interop.SVsActivityLog), activityLogMock, true);
 
             // Site the package
             Assert.AreEqual(0, package.SetSite(serviceProvider), "SetSite did not return S_OK");

@@ -1,304 +1,344 @@
-﻿
-namespace Microsoft.VsSDK.IntegrationTestLibrary {
-    using System;
-    using System.Collections.Generic;
-    using System.Text;
-    using System.Runtime.InteropServices;
-    using System.Threading;
-    using Microsoft.VisualStudio.Shell.Interop;
-    using Microsoft.VisualStudio.Shell;
+﻿using System;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VsSDK.IntegrationTestLibrary;
 
+namespace VsExt.AutoShelve_IntegrationTests
+{
     /// <summary>
-    /// This class is responsible to close dialog boxes that pop up during different VS Calls
+    ///     This class is responsible to close dialog boxes that pop up during different VS Calls
     /// </summary>
-    internal class DialogBoxPurger : IDisposable {
+    internal class DialogBoxPurger : IDisposable
+    {
         /// <summary>
-        /// The default number of milliseconds to wait for the threads to signal to terminate.
+        ///     The default number of milliseconds to wait for the threads to signal to terminate.
         /// </summary>
         private const int DefaultMillisecondsToWait = 3500;
 
         /// <summary>
-        /// Object used for synchronization between thread calls.
+        ///     Object used for synchronization between thread calls.
         /// </summary>
         internal static volatile object Mutex = new object();
 
         /// <summary>
-        /// The IVsUIShell. This cannot be queried on the working thread from the service provider. Must be done in the main thread.!!
+        ///     The button to "press" on the dialog.
         /// </summary>
-        private IVsUIShell uiShell;
+        private readonly int _buttonAction;
 
         /// <summary>
-        /// The button to "press" on the dialog.
+        ///     The expected text to see on the dialog box. If set the thread will continue finding the dialog box with this text.
         /// </summary>
-        private int buttonAction;
+        private readonly string _expectedDialogBoxText = String.Empty;
 
         /// <summary>
-        /// Thread signales to the calling thread that it is done.
+        ///     The number of the same  dialog boxes to wait for.
+        ///     This is for scenarios when two dialog boxes with the same text are popping up.
         /// </summary>
-        private bool exitThread = false;
+        private readonly int _numberOfDialogsToWaitFor = 1;
 
         /// <summary>
-        /// Calling thread signales to this thread to die.
+        ///     Calling thread signales to this thread to die.
         /// </summary>
-        private AutoResetEvent threadDone = new AutoResetEvent(false);
+        private readonly AutoResetEvent _threadDone = new AutoResetEvent(false);
 
         /// <summary>
-        /// The queued thread started.
+        ///     The queued thread started.
         /// </summary>
-        private AutoResetEvent threadStarted = new AutoResetEvent(false);
+        private readonly AutoResetEvent _threadStarted = new AutoResetEvent(false);
 
         /// <summary>
-        /// The result of the dialogbox closing for all the dialog boxes. That is if there are two of them and one fails this will be false.
+        ///     The result of the dialogbox closing for all the dialog boxes. That is if there are two of them and one fails this
+        ///     will be false.
         /// </summary>
-        private bool dialogBoxCloseResult = false;
+        private bool _dialogBoxCloseResult;
 
         /// <summary>
-        /// The expected text to see on the dialog box. If set the thread will continue finding the dialog box with this text.
+        ///     Thread signales to the calling thread that it is done.
         /// </summary>
-        private string expectedDialogBoxText = String.Empty;
+        private bool _exitThread;
 
         /// <summary>
-        /// The number of the same  dialog boxes to wait for.
-        /// This is for scenarios when two dialog boxes with the same text are popping up.
+        ///     Has the object been disposed.
         /// </summary>
-        private int numberOfDialogsToWaitFor = 1;
+        private bool _isDisposed;
 
         /// <summary>
-        /// Has the object been disposed.
+        ///     The IVsUIShell. This cannot be queried on the working thread from the service provider. Must be done in the main
+        ///     thread.!!
         /// </summary>
-        private bool isDisposed;
+        private IVsUIShell _uiShell;
 
         /// <summary>
-        /// Overloaded ctor.
+        ///     Overloaded ctor.
         /// </summary>
         /// <param name="buttonAction">The botton to "press" on the dialog box.</param>
-        /// <param name="numberOfDialogsToWaitFor">The number of dialog boxes with the same message to wait for. This is the situation when the same action pops up two of the same dialog boxes</param>
+        /// <param name="numberOfDialogsToWaitFor">
+        ///     The number of dialog boxes with the same message to wait for. This is the
+        ///     situation when the same action pops up two of the same dialog boxes
+        /// </param>
         /// <param name="expectedDialogMesssage">The expected dialog box message to check for.</param>
-        internal DialogBoxPurger(int buttonAction, int numberOfDialogsToWaitFor, string expectedDialogMesssage) {
-            this.buttonAction = buttonAction;
-            this.numberOfDialogsToWaitFor = numberOfDialogsToWaitFor;
-            this.expectedDialogBoxText = expectedDialogMesssage;
+        internal DialogBoxPurger(int buttonAction, int numberOfDialogsToWaitFor, string expectedDialogMesssage)
+        {
+            _buttonAction = buttonAction;
+            _numberOfDialogsToWaitFor = numberOfDialogsToWaitFor;
+            _expectedDialogBoxText = expectedDialogMesssage;
         }
 
         /// <summary>
-        /// Overloaded ctor.
+        ///     Overloaded ctor.
         /// </summary>
         /// <param name="buttonAction">The botton to "press" on the dialog box.</param>
-        /// <param name="numberOfDialogsToWaitFor">The number of dialog boxes with the same message to wait for. This is the situation when the same action pops up two of the same dialog boxes</param>
-        internal DialogBoxPurger(int buttonAction, int numberOfDialogsToWaitFor) {
-            this.buttonAction = buttonAction;
-            this.numberOfDialogsToWaitFor = numberOfDialogsToWaitFor;
+        /// <param name="numberOfDialogsToWaitFor">
+        ///     The number of dialog boxes with the same message to wait for. This is the
+        ///     situation when the same action pops up two of the same dialog boxes
+        /// </param>
+        internal DialogBoxPurger(int buttonAction, int numberOfDialogsToWaitFor)
+        {
+            _buttonAction = buttonAction;
+            _numberOfDialogsToWaitFor = numberOfDialogsToWaitFor;
         }
 
         /// <summary>
-        /// Overloaded ctor.
+        ///     Overloaded ctor.
         /// </summary>
         /// <param name="buttonAction">The botton to "press" on the dialog box.</param>
         /// <param name="expectedDialogMesssage">The expected dialog box message to check for.</param>
-        internal DialogBoxPurger(int buttonAction, string expectedDialogMesssage) {
-            this.buttonAction = buttonAction;
-            this.expectedDialogBoxText = expectedDialogMesssage;
+        internal DialogBoxPurger(int buttonAction, string expectedDialogMesssage)
+        {
+            _buttonAction = buttonAction;
+            _expectedDialogBoxText = expectedDialogMesssage;
         }
 
         /// <summary>
-        /// Overloaded ctor.
+        ///     Overloaded ctor.
         /// </summary>
         /// <param name="buttonAction">The botton to "press" on the dialog box.</param>
-        internal DialogBoxPurger(int buttonAction) {
-            this.buttonAction = buttonAction;
+        internal DialogBoxPurger(int buttonAction)
+        {
+            _buttonAction = buttonAction;
         }
 
-        /// <summary>
+        /// <summary/>
+
         #region IDisposable Members
-
-        void IDisposable.Dispose() {
-            if (this.isDisposed) {
+        void IDisposable.Dispose()
+        {
+            if (_isDisposed)
+            {
                 return;
             }
 
-            this.WaitForDialogThreadToTerminate();
+            WaitForDialogThreadToTerminate();
 
-            this.isDisposed = true;
+            _isDisposed = true;
         }
 
         /// <summary>
-        /// Spawns a thread that will start listening to dialog boxes.
+        ///     Spawns a thread that will start listening to dialog boxes.
         /// </summary>
-        internal void Start() {
+        internal void Start()
+        {
             // We ask for the uishell here since we cannot do that on the therad that we will spawn.
-            IVsUIShell uiShell = Package.GetGlobalService(typeof(SVsUIShell)) as IVsUIShell;
+            var uiShell = Package.GetGlobalService(typeof (SVsUIShell)) as IVsUIShell;
 
-            if (uiShell == null) {
+            if (uiShell == null)
+            {
                 throw new InvalidOperationException("Could not get the uiShell from the serviceProvider");
             }
 
-            this.uiShell = uiShell;
+            _uiShell = uiShell;
 
-            System.Threading.Thread thread = new System.Threading.Thread(new ThreadStart(this.HandleDialogBoxes));
+            var thread = new Thread(HandleDialogBoxes);
             thread.Start();
 
             // We should never deadlock here, hence do not use the lock. Wait to be sure that the thread started.
-            this.threadStarted.WaitOne(3500, false);
+            _threadStarted.WaitOne(3500, false);
         }
 
         /// <summary>
-        /// Waits for the dialog box close thread to terminate. If the thread does not signal back within millisecondsToWait that it is shutting down,
-        /// then it will tell to the thread to do it.
+        ///     Waits for the dialog box close thread to terminate. If the thread does not signal back within millisecondsToWait
+        ///     that it is shutting down,
+        ///     then it will tell to the thread to do it.
         /// </summary>
-        internal bool WaitForDialogThreadToTerminate() {
-            return this.WaitForDialogThreadToTerminate(DefaultMillisecondsToWait);
+        internal bool WaitForDialogThreadToTerminate()
+        {
+            return WaitForDialogThreadToTerminate(DefaultMillisecondsToWait);
         }
 
         /// <summary>
-        /// Waits for the dialog box close thread to terminate. If the thread does not signal back within millisecondsToWait that it is shutting down,
-        /// then it will tell to the thread to do it.
+        ///     Waits for the dialog box close thread to terminate. If the thread does not signal back within millisecondsToWait
+        ///     that it is shutting down,
+        ///     then it will tell to the thread to do it.
         /// </summary>
-        /// <param name="millisecondsToWait">The number milliseconds to wait for until the dialog purger thread is signaled to terminate. This is just for safe precaution that we do not hang. </param>
+        /// <param name="numberOfMillisecondsToWait">
+        ///     The number milliseconds to wait for until the dialog purger thread is signaled to
+        ///     terminate. This is just for safe precaution that we do not hang.
+        /// </param>
         /// <returns>The result of the dialog boxes closing</returns>
-        internal bool WaitForDialogThreadToTerminate(int numberOfMillisecondsToWait) {
-            bool signaled = false;
-
+        internal bool WaitForDialogThreadToTerminate(int numberOfMillisecondsToWait)
+        {
             // We give millisecondsToWait sec to bring up and close the dialog box.
-            signaled = this.threadDone.WaitOne(numberOfMillisecondsToWait, false);
+            var signaled = _threadDone.WaitOne(numberOfMillisecondsToWait, false);
 
             // Kill the thread since a timeout occured.
-            if (!signaled) {
-                lock (Mutex) {
-                    // Set the exit thread to true. Next time the thread will kill itselfes if it sees 
-                    this.exitThread = true;
-                }
-
-                // Wait for the thread to finish. We should never deadlock here.
-                this.threadDone.WaitOne();
+            if (signaled) return _dialogBoxCloseResult;
+            lock (Mutex)
+            {
+                // Set the exit thread to true. Next time the thread will kill itselfes if it sees 
+                _exitThread = true;
             }
 
-            return this.dialogBoxCloseResult;
+            // Wait for the thread to finish. We should never deadlock here.
+            _threadDone.WaitOne();
+
+            return _dialogBoxCloseResult;
         }
 
         /// <summary>
-        /// This is the thread method. 
+        ///     This is the thread method.
         /// </summary>
-        private void HandleDialogBoxes() {
+        private void HandleDialogBoxes()
+        {
             // No synchronization numberOfDialogsToWaitFor since it is readonly
-            IntPtr[] hwnds = new IntPtr[this.numberOfDialogsToWaitFor];
-            bool[] dialogBoxCloseResults = new bool[this.numberOfDialogsToWaitFor];
+            var hwnds = new IntPtr[_numberOfDialogsToWaitFor];
+            var dialogBoxCloseResults = new bool[_numberOfDialogsToWaitFor];
 
-            try {
+            try
+            {
                 // Signal that we started
-                lock (Mutex) {
-                    this.threadStarted.Set();
+                lock (Mutex)
+                {
+                    _threadStarted.Set();
                 }
 
                 // The loop will be exited either if a message is send by the caller thread or if we found the dialog. If a message box text is specified the loop will not exit until the dialog is found.
                 bool stayInLoop = true;
                 int dialogBoxesToWaitFor = 1;
 
-                while (stayInLoop) {
+                while (stayInLoop)
+                {
                     int hwndIndex = dialogBoxesToWaitFor - 1;
 
                     // We need to lock since the caller might set context to null.
-                    lock (Mutex) {
-                        if (this.exitThread) {
+                    lock (Mutex)
+                    {
+                        if (_exitThread)
+                        {
                             break;
                         }
 
                         // We protect the shell too from reentrency.
-                        this.uiShell.GetDialogOwnerHwnd(out hwnds[hwndIndex]);
-
+                        _uiShell.GetDialogOwnerHwnd(out hwnds[hwndIndex]);
                     }
 
-                    if (hwnds[hwndIndex] != IntPtr.Zero) {
-                        StringBuilder windowClassName = new StringBuilder(256);
+                    if (hwnds[hwndIndex] != IntPtr.Zero)
+                    {
+                        var windowClassName = new StringBuilder(256);
                         NativeMethods.GetClassName(hwnds[hwndIndex], windowClassName, windowClassName.Capacity);
 
                         // The #32770 is the class name of a messagebox dialog.
-                        if (windowClassName.ToString().Contains("#32770")) {
-                            IntPtr unmanagedMemoryLocation = IntPtr.Zero;
-                            string dialogBoxText = String.Empty;
-                            try {
-                                unmanagedMemoryLocation = Marshal.AllocHGlobal(10 * 1024);
-                                NativeMethods.EnumChildWindows(hwnds[hwndIndex], new NativeMethods.CallBack(FindMessageBoxString), unmanagedMemoryLocation);
-                                dialogBoxText = Marshal.PtrToStringUni(unmanagedMemoryLocation);
-                            } finally {
-                                if (unmanagedMemoryLocation != IntPtr.Zero) {
-                                    Marshal.FreeHGlobal(unmanagedMemoryLocation);
-                                }
+                        if (!windowClassName.ToString().Contains("#32770")) continue;
+                        var unmanagedMemoryLocation = IntPtr.Zero;
+                        string dialogBoxText;
+                        try
+                        {
+                            unmanagedMemoryLocation = Marshal.AllocHGlobal(10*1024);
+                            NativeMethods.EnumChildWindows(hwnds[hwndIndex], FindMessageBoxString,
+                                unmanagedMemoryLocation);
+                            dialogBoxText = Marshal.PtrToStringUni(unmanagedMemoryLocation);
+                        }
+                        finally
+                        {
+                            if (unmanagedMemoryLocation != IntPtr.Zero)
+                            {
+                                Marshal.FreeHGlobal(unmanagedMemoryLocation);
+                            }
+                        }
+
+                        lock (Mutex)
+                        {
+                            // Since this is running on the main thread be sure that we close the dialog.
+                            bool dialogCloseResult = false;
+                            if (_buttonAction != 0)
+                            {
+                                dialogCloseResult = NativeMethods.EndDialog(hwnds[hwndIndex], _buttonAction);
                             }
 
-                            lock (Mutex) {
-
-                                // Since this is running on the main thread be sure that we close the dialog.
-                                bool dialogCloseResult = false;
-                                if (this.buttonAction != 0) {
-                                    dialogCloseResult = NativeMethods.EndDialog(hwnds[hwndIndex], this.buttonAction);
-                                }
-
-                                // Check if we have found the right dialog box.
-                                if (String.IsNullOrEmpty(this.expectedDialogBoxText) || (!String.IsNullOrEmpty(dialogBoxText) && String.Compare(this.expectedDialogBoxText, dialogBoxText.Trim(), StringComparison.OrdinalIgnoreCase) == 0)) {
-                                    dialogBoxCloseResults[hwndIndex] = dialogCloseResult;
-                                    if (dialogBoxesToWaitFor++ >= this.numberOfDialogsToWaitFor) {
-                                        stayInLoop = false;
-                                    }
+                            // Check if we have found the right dialog box.
+                            if (String.IsNullOrEmpty(_expectedDialogBoxText) ||
+                                (!String.IsNullOrEmpty(dialogBoxText) &&
+                                 String.Compare(_expectedDialogBoxText, dialogBoxText.Trim(),
+                                     StringComparison.OrdinalIgnoreCase) == 0))
+                            {
+                                dialogBoxCloseResults[hwndIndex] = dialogCloseResult;
+                                if (dialogBoxesToWaitFor++ >= _numberOfDialogsToWaitFor)
+                                {
+                                    stayInLoop = false;
                                 }
                             }
                         }
                     }
                 }
-            } finally {
+            }
+            finally
+            {
                 //Let the main thread run a possible close command.
-                System.Threading.Thread.Sleep(2000);
+                Thread.Sleep(2000);
 
-                foreach (IntPtr hwnd in hwnds) {
-                    // At this point the dialog should be closed, if not attempt to close it.
-                    if (hwnd != IntPtr.Zero) {
-                        NativeMethods.SendMessage(hwnd, NativeMethods.WM_CLOSE, 0, new IntPtr(0));
-                    }
+                foreach (var hwnd in hwnds.Where(hwnd => hwnd != IntPtr.Zero))
+                {
+                    NativeMethods.SendMessage(hwnd, NativeMethods.WM_CLOSE, 0, new IntPtr(0));
                 }
 
-                lock (Mutex) {
+                lock (Mutex)
+                {
                     // Be optimistic.
-                    this.dialogBoxCloseResult = true;
-
-                    for (int i = 0; i < dialogBoxCloseResults.Length; i++) {
-                        if (!dialogBoxCloseResults[i]) {
-                            this.dialogBoxCloseResult = false;
-                            break;
-                        }
-                    }
-
-                    this.threadDone.Set();
+                    _dialogBoxCloseResult = dialogBoxCloseResults.All(t => t);
+                    _threadDone.Set();
                 }
             }
         }
 
         /// <summary>
-        /// Finds a messagebox string on a messagebox.
+        ///     Finds a messagebox string on a messagebox.
         /// </summary>
         /// <param name="hwnd">The windows handle of the dialog</param>
         /// <param name="unmanagedMemoryLocation">A pointer to the memorylocation the string will be written to</param>
         /// <returns>True if found.</returns>
-        private static bool FindMessageBoxString(IntPtr hwnd, IntPtr unmanagedMemoryLocation) {
-            StringBuilder sb = new StringBuilder(512);
+        private static bool FindMessageBoxString(IntPtr hwnd, IntPtr unmanagedMemoryLocation)
+        {
+            var sb = new StringBuilder(512);
             NativeMethods.GetClassName(hwnd, sb, sb.Capacity);
 
-            if (sb.ToString().ToLower().Contains("static")) {
-                StringBuilder windowText = new StringBuilder(2048);
+            if (sb.ToString().ToLower().Contains("static"))
+            {
+                var windowText = new StringBuilder(2048);
                 NativeMethods.GetWindowText(hwnd, windowText, windowText.Capacity);
 
-                if (windowText.Length > 0) {
+                if (windowText.Length > 0)
+                {
                     IntPtr stringAsPtr = IntPtr.Zero;
-                    try {
+                    try
+                    {
                         stringAsPtr = Marshal.StringToHGlobalAnsi(windowText.ToString());
                         char[] stringAsArray = windowText.ToString().ToCharArray();
 
                         // Since unicode characters are copied check if we are out of the allocated length.
                         // If not add the end terminating zero.
-                        if ((2 * stringAsArray.Length) + 1 < 2048) {
+                        if ((2*stringAsArray.Length) + 1 < 2048)
+                        {
                             Marshal.Copy(stringAsArray, 0, unmanagedMemoryLocation, stringAsArray.Length);
-                            Marshal.WriteInt32(unmanagedMemoryLocation, 2 * stringAsArray.Length, 0);
+                            Marshal.WriteInt32(unmanagedMemoryLocation, 2*stringAsArray.Length, 0);
                         }
-                    } finally {
-                        if (stringAsPtr != IntPtr.Zero) {
+                    }
+                    finally
+                    {
+                        if (stringAsPtr != IntPtr.Zero)
+                        {
                             Marshal.FreeHGlobal(stringAsPtr);
                         }
                     }

@@ -1,9 +1,7 @@
-using System;
+namespace VsExt.AutoShelve.Packaging {
+    internal static class PkgCmdIdList {
+        public const int CmdidAutoShelve = 0x0256;
 
-namespace VsExt.AutoShelve {
-    internal static class PkgCmdIDList {
-        public const int cmdidAutoShelve = 0x0256;
-
-        public const int cmdidAutoShelveNow = 0x0512;
+        public const int CmdidAutoShelveNow = 0x0512;
     }
 }

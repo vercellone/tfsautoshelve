@@ -3,35 +3,24 @@ using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Microsoft.VisualStudio.Shell;
+using VsExt.AutoShelve.EventArgs;
 
-namespace VsExt.AutoShelve {
+namespace VsExt.AutoShelve.IO {
 
     [ComVisible(true)]
     [Guid("0f98bfc6-8c54-426a-94f5-256df616a90a")]
     public class OptionsPageGeneral : DialogPage {
-
-        protected const string GENERAL_CAT = "General";
+        private const string GeneralCat = "General";
 
         #region Properties
 
-        private string _name;
-
-        [Category(GENERAL_CAT)]
-        [DisplayName("Shelveset Name")]
-        [Description("Shelve set name used as a string.Format input value where {0}=WorkspaceInfo.Name, {1}=WorkspaceInfo.OwnerName, {2}=DateTime.Now.  IMPORTANT: If you use multiple workspaces, and don't include WorkspaceInfo.Name then only the pending changes in the last workspace will be included in the shelveset. Anything greater than 64 characters will be truncated!")]
-        public string ShelvesetName {
-            get {
-                return _name;
-            }
-            set {
-                _name = value;
-            }
-        }
+        [Category(GeneralCat), DisplayName(@"Shelveset Name"), Description("Shelve set name used as a string.Format input value where {0}=WorkspaceInfo.Name, {1}=WorkspaceInfo.OwnerName, {2}=DateTime.Now.  IMPORTANT: If you use multiple workspaces, and don't include WorkspaceInfo.Name then only the pending changes in the last workspace will be included in the shelveset. Anything greater than 64 characters will be truncated!")]
+        public string ShelvesetName { get; set; }
 
         private int _interval;
 
-        [Category(GENERAL_CAT)]
-        [DisplayName("Interval")]
+        [Category(GeneralCat)]
+        [DisplayName(@"Interval")]
         [Description("The interval (in minutes) between shelvesets when running.")]
         public int TimerSaveInterval {
             get {
@@ -46,58 +35,37 @@ namespace VsExt.AutoShelve {
             }
         }
 
-        private bool _suppressDialogs;
+        [Category(GeneralCat), DisplayName(@"Suppress Dialogs"), Description("Suppress run time dialogs.  Currently just the nagging 'Please connect to a Team Project first.' MessageBox")]
+        public bool SuppressDialogs { get; set; }
 
-        [Category(GENERAL_CAT)]
-        [DisplayName("Suppress Dialogs")]
-        [Description("Suppress run time dialogs.  Currently just the nagging 'Please connect to a Team Project first.' MessageBox")]
-        public bool SuppressDialogs {
-            get {
-                return _suppressDialogs;
-            }
-            set {
-                _suppressDialogs = value;
-            }
-        }
-
-        [Category(GENERAL_CAT), DisplayName(@"Output Pane"), Description("Output window pane to write status messages.  If you set this to an empty string, nothing is written to the Output window.  Note: Regardless, the output pane is no longer explicitly activated.  So, no more focus stealing!")]
+        [Category(GeneralCat), DisplayName(@"Output Pane"), Description("Output window pane to write status messages.  If you set this to an empty string, nothing is written to the Output window.  Note: Regardless, the output pane is no longer explicitly activated.  So, no more focus stealing!")]
         public string OutputPane { get; set; }
 
-        private ushort _maxSets;
-
-        [Category(GENERAL_CAT)]
-        [DisplayName("Μaximum Shelvesets")]
-        [Description("Maximum number of shelvesets to retain.  Older shelvesets will be deleted. 0=Disabled. Note: ShelvesetName must include a {2} (DateTime.Now component) unique enough to generate more than the maximum for this to have any impact.  If {0} (WorkspaceInfo.Name) is included, then the max is applied per workspace.")]
-        public ushort MaximumShelvesets
-        {
-            get {
-                return _maxSets;
-            }
-            set {
-                _maxSets = value;
-            }
-        }
+        [Category(GeneralCat), DisplayName(@"Μaximum Shelvesets"), Description("Maximum number of shelvesets to retain.  Older shelvesets will be deleted. 0=Disabled. Note: ShelvesetName must include a {2} (DateTime.Now component) unique enough to generate more than the maximum for this to have any impact.  If {0} (WorkspaceInfo.Name) is included, then the max is applied per workspace.")]
+        public ushort MaximumShelvesets { get; set; }
 
         #endregion
 
         public OptionsPageGeneral() {
             OutputPane = "TFS Auto Shelve";
-            _maxSets = 0;
-            _name = "Auto {0}";
-            _interval = 5;
-            _suppressDialogs = true;
+            MaximumShelvesets = 0;
+            ShelvesetName = "Auto {0}";
+            TimerSaveInterval = 5;
+            SuppressDialogs = true;
         }
 
-        protected override void OnApply(DialogPage.PageApplyEventArgs e) {
+        protected override void OnApply(PageApplyEventArgs e) {
             base.OnApply(e);
             bool flag = OnOptionsChanged == null;
             if (!flag) {
-                OptionsChangedEventArgs optionsEventArg = new OptionsChangedEventArgs();
-                optionsEventArg.Interval = TimerSaveInterval;
-                optionsEventArg.MaximumShelvesets = MaximumShelvesets;
-                optionsEventArg.OutputPane = OutputPane;
-                optionsEventArg.ShelvesetName = ShelvesetName;
-                optionsEventArg.SuppressDialogs = SuppressDialogs;
+                var optionsEventArg = new OptionsChangedEventArgs
+                {
+                    Interval = TimerSaveInterval,
+                    MaximumShelvesets = MaximumShelvesets,
+                	OutputPane = OutputPane,
+                    ShelvesetName = ShelvesetName,
+                    SuppressDialogs = SuppressDialogs
+                };
                 OnOptionsChanged(this, optionsEventArg);
             }
         }
