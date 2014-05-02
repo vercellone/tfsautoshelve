@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VSSDK.Tools.VsIdeTesting;
 using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.Shell;
-using EnvDTE;
+using VsExt.AutoShelve;
+using VsExt.AutoShelve.Packaging;
 
 namespace VsExt.AutoShelve_IntegrationTests {
     /// <summary>
@@ -16,33 +13,25 @@ namespace VsExt.AutoShelve_IntegrationTests {
     public class PackageTest {
         private delegate void ThreadInvoker();
 
-        private TestContext testContextInstance;
-
         /// <summary>
         ///Gets or sets the test context which provides
         ///information about and functionality for the current test run.
         ///</summary>
-        public TestContext TestContext {
-            get {
-                return testContextInstance;
-            }
-            set {
-                testContextInstance = value;
-            }
-        }
+        public TestContext TestContext { get; set; }
 
         [TestMethod]
         [HostType("VS IDE")]
         public void PackageLoadTest() {
-            UIThreadInvoker.Invoke((ThreadInvoker)delegate() {
+            UIThreadInvoker.Invoke((ThreadInvoker)delegate
+            {
 
                 //Get the Shell Service
-                IVsShell shellService = VsIdeTestHostContext.ServiceProvider.GetService(typeof(SVsShell)) as IVsShell;
+                var shellService = VsIdeTestHostContext.ServiceProvider.GetService(typeof(SVsShell)) as IVsShell;
                 Assert.IsNotNull(shellService);
 
                 //Validate package load
                 IVsPackage package;
-                Guid packageGuid = new Guid(VsExt.AutoShelve.GuidList.guidAutoShelvePkgString);
+                var packageGuid = new Guid(GuidList.GuidAutoShelvePkgString);
                 Assert.IsTrue(0 == shellService.LoadPackage(ref packageGuid, out package));
                 Assert.IsNotNull(package, "Package failed to load");
             });
