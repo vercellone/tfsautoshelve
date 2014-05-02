@@ -59,6 +59,7 @@ namespace VsExt.AutoShelve {
                 _maxShelvesets = value;
             }
         }
+        public string OutputPane { get; set; }
 
         public bool SuppressDialogs {
             get {
@@ -91,19 +92,21 @@ namespace VsExt.AutoShelve {
             }
         }
 
+        public static bool IsValidWorkspace(string absolutepath) {
+            return (Workstation.Current.GetLocalWorkspaceInfo(absolutepath) != null);
+        }
+
         public string WorkingDirectory {
             get {
                 return _workingDirectory;
             }
             set {
                 _workingDirectory = value;
-                if (!string.IsNullOrWhiteSpace(value)) {
-                    Workspace = Workstation.Current.GetLocalWorkspaceInfo(value);
-                    if (OnWorkspaceChanged != null) {
+                Workspace = string.IsNullOrWhiteSpace(value) ? null : Workstation.Current.GetLocalWorkspaceInfo(value);
+                if (OnWorkspaceChanged != null) {
                         WorkspaceChangedEventArgs workspaceChangedEventArg = new WorkspaceChangedEventArgs();
                         workspaceChangedEventArg.IsWorkspaceValid = (Workspace != null);
                         OnWorkspaceChanged(this, workspaceChangedEventArg);
-                    }
                 }
             }
         }
@@ -244,11 +247,7 @@ namespace VsExt.AutoShelve {
 
         public void Terminate() {
             StopTimer();
-            if (OnWorkspaceChanged != null) {
-                WorkspaceChangedEventArgs workspaceChangedEventArg = new WorkspaceChangedEventArgs();
-                workspaceChangedEventArg.IsWorkspaceValid = false;
-                OnWorkspaceChanged(this, workspaceChangedEventArg);
-            }
+            WorkingDirectory = string.Empty;
         }
 
         public void ToggleTimerRunState() {

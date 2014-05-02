@@ -29,7 +29,7 @@ namespace VsExt.AutoShelve {
     [ProvideOptionPage(typeof(OptionsPageGeneral), "TFS Auto Shelve", "General", 101, 106, true)]
     // This attribute is used to register the information needed to show this package
     // in the Help/About dialog of Visual Studio.
-    [InstalledProductRegistration("#110", "#112", "3.5", IconResourceID = 400)]
+    [InstalledProductRegistration("#110", "#112", "3.6", IconResourceID = 400)]
     [Guid(GuidList.guidAutoShelvePkgString)]
     public class VsExtAutoShelvePackage : Package, IVsSolutionEvents, IDisposable {
 
@@ -120,7 +120,8 @@ namespace VsExt.AutoShelve {
             ToggleMenuCommandRunStateText(_menuRunState);
         }
 
-        private void InitializeAutoShelve() {
+        private void InitializeAutoShelve(string workingDirectory) {
+            InitializeSolutionServiceEvents();
             try {
                 _autoShelve = new TfsAutoShelve(_extName, _dte);
 
@@ -136,10 +137,11 @@ namespace VsExt.AutoShelve {
 
                 // Property Initialization
                 _autoShelve.MaximumShelvesets = _options.MaximumShelvesets;
+                _autoShelve.OutputPane = _options.OutputPane;
                 _autoShelve.ShelvesetName = _options.ShelvesetName;
                 _autoShelve.TimerInterval = _options.TimerSaveInterval;
                 _autoShelve.SuppressDialogs = _options.SuppressDialogs;
-                _autoShelve.WorkingDirectory = Directory.GetParent(_dte.Solution.FullName).FullName;
+                _autoShelve.WorkingDirectory = workingDirectory;
 
                 _autoShelve.StartTimer();
             } catch {
@@ -244,11 +246,28 @@ namespace VsExt.AutoShelve {
 
         public int OnAfterLoadProject(IVsHierarchy pStubHierarchy, IVsHierarchy pRealHierarchy) { return 0; }
 
-        public int OnAfterOpenProject(IVsHierarchy pHierarchy, int fAdded) { return 0; }
+        public int OnAfterOpenProject(IVsHierarchy pHierarchy, int fAdded) {
+            if (_autoShelve == null || _autoShelve.Workspace == null) {
+                object projectObj;
+                pHierarchy.GetProperty(Microsoft.VisualStudio.VSConstants.VSITEMID_ROOT, (int)__VSHPROPID.VSHPROPID_ExtObject, out projectObj);
+                var project = (Project)projectObj;
+                if (project != null && !string.IsNullOrWhiteSpace(project.FullName)) {
+                    string projDirectory = System.IO.Path.GetDirectoryName(project.FullName);
+                    if (TfsAutoShelve.IsValidWorkspace(projDirectory)) {
+                        InitializeAutoShelve(projDirectory);
+                    }
+                }
+            }
+            return 0;
+        }
 
         public int OnAfterOpenSolution(object pUnkReserved, int fNewSolution) {
-            InitializeSolutionServiceEvents();
-            InitializeAutoShelve();
+            if (!string.IsNullOrWhiteSpace(_dte.Solution.FullName)) {
+                string slnDirectory = System.IO.Path.GetDirectoryName(_dte.Solution.FullName);
+                if (TfsAutoShelve.IsValidWorkspace(slnDirectory)) {
+                    InitializeAutoShelve(slnDirectory);
+                }
+            }
             return 0;
         }
 
@@ -271,6 +290,7 @@ namespace VsExt.AutoShelve {
         private void Options_OnOptionsChanged(object sender, OptionsChangedEventArgs e) {
             if (_autoShelve != null) {
                 _autoShelve.MaximumShelvesets = e.MaximumShelvesets;
+                _autoShelve.OutputPane = e.OutputPane;
                 _autoShelve.ShelvesetName = e.ShelvesetName;
                 _autoShelve.SuppressDialogs = e.SuppressDialogs;
                 _autoShelve.TimerInterval = e.Interval;
@@ -291,11 +311,8 @@ namespace VsExt.AutoShelve {
         }
 
         private void WriteToOutputWindow(string outputText) {
-            /// TODO: Allow user to specify output pane name (if empty don't output at all!)
-            OutputWindow outputWindow = _dte.ToolWindows.OutputWindow;
-            OutputWindowPane outputWindowPane = outputWindow.OutputWindowPanes.Item("TFS Auto Shelve");
-            outputWindowPane.Activate();
-            outputWindowPane.OutputString(string.Concat(outputText, "\n"));
+            if (!string.IsNullOrWhiteSpace(_autoShelve.OutputPane))
+                _dte.ToolWindows.OutputWindow.OutputWindowPanes.Item(_autoShelve.OutputPane).OutputString(string.Concat(outputText, "\n"));
         }
 
         private void WriteToStatusBar(string text) {
