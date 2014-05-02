@@ -9,23 +9,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		IntegrationTests.testsettings = IntegrationTests.testsettings
 		UnitTests.testsettings = UnitTests.testsettings
+		VsExt.AutoShelve.vsmdi = VsExt.AutoShelve.vsmdi
 	EndProjectSection
 EndProject
 Global
-	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 4
-		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = http://afw01vtfsprd01:8080/tfs/dyncorpsd
-		SccLocalPath0 = .
-		SccProjectUniqueName1 = VsExt.AutoShelve\\VsExt.AutoShelve.csproj
-		SccProjectName1 = VsExt.AutoShelve
-		SccLocalPath1 = VsExt.AutoShelve
-		SccProjectUniqueName2 = VsExt.AutoShelve\\VsExt.AutoShelve_IntegrationTests\\VsExt.AutoShelve_IntegrationTests.csproj
-		SccProjectName2 = VsExt.AutoShelve/VsExt.AutoShelve_IntegrationTests
-		SccLocalPath2 = VsExt.AutoShelve\\VsExt.AutoShelve_IntegrationTests
-		SccProjectUniqueName3 = VsExt.AutoShelve\\VsExt.AutoShelve_UnitTests\\VsExt.AutoShelve_UnitTests.csproj
-		SccProjectName3 = VsExt.AutoShelve/VsExt.AutoShelve_UnitTests
-		SccLocalPath3 = VsExt.AutoShelve\\VsExt.AutoShelve_UnitTests
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = VsExt.AutoShelve.vsmdi
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

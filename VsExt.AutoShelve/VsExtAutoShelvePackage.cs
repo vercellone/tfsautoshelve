@@ -62,9 +62,10 @@ namespace VsExt.AutoShelve {
 
         private void autoShelve_OnShelvesetCreated(object sender, ShelvesetCreatedEventArgs e) {
             if (e.ExecutionSuccess) {
-                string str = string.Format("Shelved {0} pending changes to Shelveset Name: {1}", e.ShelvesetChangeCount, e.ShelvesetName);
+              string str = string.Format("Shelved {0} pending change{1} to Shelveset Name: {2}", e.ShelvesetChangeCount, 
+                e.ShelvesetChangeCount != 1 ? "s" :"", e.ShelvesetName);
                 if (e.ShelvesetsPurgeCount > 0) {
-                    str += string.Format("; MaximumShelvesets={0}: Deleted: {1}", _autoShelve.MaximumShelvesets, e.ShelvesetsPurgeCount);
+                    str += string.Format(" | Maximum Shelvesets: {0} | Deleted: {1}", _autoShelve.MaximumShelvesets, e.ShelvesetsPurgeCount);
                 }
                 WriteToStatusBar(str);
                 WriteToOutputWindow(str);
@@ -136,6 +137,7 @@ namespace VsExt.AutoShelve {
 
                 // Property Initialization
                 _autoShelve.MaximumShelvesets = _options.MaximumShelvesets;
+                _autoShelve.OutputPane = _options.OutputPane;
                 _autoShelve.ShelvesetName = _options.ShelvesetName;
                 _autoShelve.TimerInterval = _options.TimerSaveInterval;
                 _autoShelve.SuppressDialogs = _options.SuppressDialogs;
@@ -249,7 +251,7 @@ namespace VsExt.AutoShelve {
                 object projectObj;
                 pHierarchy.GetProperty(Microsoft.VisualStudio.VSConstants.VSITEMID_ROOT, (int)__VSHPROPID.VSHPROPID_ExtObject, out projectObj);
                 var project = (Project)projectObj;
-                if (!string.IsNullOrWhiteSpace(project.FullName)) {
+                if (project != null && !string.IsNullOrWhiteSpace(project.FullName)) {
                     string projDirectory = System.IO.Path.GetDirectoryName(project.FullName);
                     if (TfsAutoShelve.IsValidWorkspace(projDirectory)) {
                         InitializeAutoShelve(projDirectory);
@@ -288,6 +290,7 @@ namespace VsExt.AutoShelve {
         private void Options_OnOptionsChanged(object sender, OptionsChangedEventArgs e) {
             if (_autoShelve != null) {
                 _autoShelve.MaximumShelvesets = e.MaximumShelvesets;
+                _autoShelve.OutputPane = e.OutputPane;
                 _autoShelve.ShelvesetName = e.ShelvesetName;
                 _autoShelve.SuppressDialogs = e.SuppressDialogs;
                 _autoShelve.TimerInterval = e.Interval;
@@ -308,11 +311,8 @@ namespace VsExt.AutoShelve {
         }
 
         private void WriteToOutputWindow(string outputText) {
-            /// TODO: Allow user to specify output pane name (if empty don't output at all!)
-            OutputWindow outputWindow = _dte.ToolWindows.OutputWindow;
-            OutputWindowPane outputWindowPane = outputWindow.OutputWindowPanes.Item("TFS Auto Shelve");
-            outputWindowPane.Activate();
-            outputWindowPane.OutputString(string.Concat(outputText, "\n"));
+            if (!string.IsNullOrWhiteSpace(_autoShelve.OutputPane))
+                _dte.ToolWindows.OutputWindow.OutputWindowPanes.Item(_autoShelve.OutputPane).OutputString(string.Concat(outputText, "\n"));
         }
 
         private void WriteToStatusBar(string text) {

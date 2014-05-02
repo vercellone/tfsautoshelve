@@ -58,6 +58,7 @@ namespace VsExt.AutoShelve {
                 _maxShelvesets = value;
             }
         }
+        public string OutputPane { get; set; }
 
         public bool SuppressDialogs {
             get {
