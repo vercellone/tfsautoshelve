@@ -145,9 +145,8 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IO\ActivityLog.cs" />
     <Compile Include="EventArgs\ShelvesetCreatedEventArgs.cs" />
-    <Compile Include="EventArgs\WorkSpaceChangedEventArgs.cs" />
+    <Compile Include="IAutoShelve.cs" />
     <Compile Include="Packaging\Guids.cs" />
     <Compile Include="EventArgs\OptionsChangedEventArgs.cs" />
     <Compile Include="IO\OptionsPageGeneral.cs">

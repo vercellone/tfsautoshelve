@@ -28,7 +28,7 @@ namespace VsExt.AutoShelve.IO {
             }
             set {
                 if (value <= 0) {
-                    WinFormsHelper.ShowMessageBox("TimerSaveInterval must be greater than 0.", "Error - TFS Auto Shelve Settings", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+                    WinFormsHelper.ShowMessageBox("TimerSaveInterval must be greater than 0.", string.Format("Error - {0} Settings", Resources.ExtensionName), MessageBoxButtons.OK, MessageBoxIcon.Hand);
                 } else {
                     _interval = value;
                 }
@@ -47,7 +47,7 @@ namespace VsExt.AutoShelve.IO {
         #endregion
 
         public OptionsPageGeneral() {
-            OutputPane = "TFS Auto Shelve";
+            OutputPane = Resources.ExtensionName;
             MaximumShelvesets = 0;
             ShelvesetName = "Auto {0}";
             TimerSaveInterval = 5;
