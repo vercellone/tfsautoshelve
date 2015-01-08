@@ -7,10 +7,11 @@
     <Icon>Images\AutoShelve.png</Icon>
     <PreviewImage>Images\AutoShelvePreview.png</PreviewImage>
   </Metadata>
-  <Installation InstalledByMsi="false">
+  <Installation InstalledByMsi="false" AllUsers="true">
     <InstallationTarget Id="Microsoft.VisualStudio.Pro" Version="[12.0,13.0)" />
     <InstallationTarget Version="[12.0,13.0)" Id="Microsoft.VisualStudio.Premium" />
     <InstallationTarget Version="[12.0,13.0)" Id="Microsoft.VisualStudio.Ultimate" />
+    <InstallationTarget Version="[12.0,13.0)" Id="Microsoft.VisualStudio.IntegratedShell" />
   </Installation>
   <Dependencies>
     <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="4.5" />
