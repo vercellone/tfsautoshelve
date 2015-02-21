@@ -14,18 +14,15 @@ namespace VsExt.AutoShelve.IO {
 
         #region Properties
 
-        [Category(GeneralCat), DisplayName(@"Enabled"), Description("Enabled / disable Auto Shelve")]
-        public bool Enabled { get; set; }
-
-        [Category(GeneralCat), DisplayName(@"Shelveset Name"), Description("Shelve set name used as a string.Format input value where {0}=WorkspaceInfo.Name, {1}=WorkspaceInfo.OwnerName, {2}=DateTime.Now, {3}=Domain of WorkspaceInfo.OwnerName, {4}=UserName of WorkspaceInfo.OwnerName.  IMPORTANT: If you use multiple workspaces, and don't include WorkspaceInfo.Name then only the pending changes in the last workspace will be included in the shelveset. Anything greater than 64 characters will be truncated!")]
+        [Category(GeneralCat), DisplayName(@"Shelveset Name"), Description("Shelve set name used as a string.Format input value where {0}=WorkspaceInfo.Name, {1}=WorkspaceInfo.OwnerName, {2}=DateTime.Now.  IMPORTANT: If you use multiple workspaces, and don't include WorkspaceInfo.Name then only the pending changes in the last workspace will be included in the shelveset. Anything greater than 64 characters will be truncated!")]
         public string ShelvesetName { get; set; }
 
-        private double _interval;
+        private int _interval;
 
         [Category(GeneralCat)]
         [DisplayName(@"Interval")]
         [Description("The interval (in minutes) between shelvesets when running.")]
-        public double TimerSaveInterval {
+        public int TimerSaveInterval {
             get {
                 return _interval;
             }
@@ -37,6 +34,9 @@ namespace VsExt.AutoShelve.IO {
                 }
             }
         }
+
+        [Category(GeneralCat), DisplayName(@"Suppress Dialogs"), Description("Suppress run time dialogs.  Currently just the nagging 'Please connect to a Team Project first.' MessageBox")]
+        public bool SuppressDialogs { get; set; }
 
         [Category(GeneralCat), DisplayName(@"Output Pane"), Description("Output window pane to write status messages.  If you set this to an empty string, nothing is written to the Output window.  Note: Regardless, the output pane is no longer explicitly activated.  So, no more focus stealing!")]
         public string OutputPane { get; set; }
@@ -51,7 +51,7 @@ namespace VsExt.AutoShelve.IO {
             MaximumShelvesets = 0;
             ShelvesetName = "Auto {0}";
             TimerSaveInterval = 5;
-            Enabled = true;
+            SuppressDialogs = true;
         }
 
         protected override void OnApply(PageApplyEventArgs e) {
@@ -60,11 +60,11 @@ namespace VsExt.AutoShelve.IO {
             if (!flag) {
                 var optionsEventArg = new OptionsChangedEventArgs
                 {
-                    Enabled = Enabled,
                     Interval = TimerSaveInterval,
                     MaximumShelvesets = MaximumShelvesets,
                 	OutputPane = OutputPane,
                     ShelvesetName = ShelvesetName,
+                    SuppressDialogs = SuppressDialogs
                 };
                 OnOptionsChanged(this, optionsEventArg);
             }
