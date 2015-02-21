@@ -11,21 +11,19 @@ namespace VsExt.AutoShelve {
     [Guid("6581CC5B-7771-4ACE-8B47-FAE72B687341")]
     [ComVisible(true)]
     interface IAutoShelveService {
-        void CreateShelveset();
-        void Dispose();
+        bool IsRunning { get; }
         ushort MaximumShelvesets { get; set; }
+        string ShelvesetName { get; set; }
+        double TimerInterval { get; set; }
+
+        void CreateShelveset(bool force = false);
+        void Start();
+        void Stop();
+
         event EventHandler<VsExt.AutoShelve.EventArgs.ShelvesetCreatedEventArgs> OnShelvesetCreated;
         event EventHandler OnTfsConnectionError;
-        event EventHandler OnTimerStart;
-        event EventHandler OnTimerStop;
-        bool IsRunning { get; }
-        string OutputPane { get; set; }
-        void SaveShelveset();
-        string ShelvesetName { get; set; }
-        void StartTimer();
-        void StopTimer();
-        bool SuppressDialogs { get; set; }
-        int TimerInterval { get; set; }
+        event EventHandler OnStart;
+        event EventHandler OnStop;
     }
 
     /// <summary>
