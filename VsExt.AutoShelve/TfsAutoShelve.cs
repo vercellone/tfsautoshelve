@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Threading;
+using System.Web;
 using EnvDTE80;
 using Microsoft.TeamFoundation.Client;
 using Microsoft.TeamFoundation.VersionControl.Client;
@@ -156,7 +157,8 @@ namespace VsExt.AutoShelve {
         public void SaveShelveset() {
             try {
                 if (TfsExt == null) return;
-                var domainUri = _tfsExt.ActiveProjectContext.DomainUri;
+                // decode the url: some repo's have spaces in them, which are url encoded to %20.
+                var domainUri = HttpUtility.UrlDecode(_tfsExt.ActiveProjectContext.DomainUri);
                 var teamProjectCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(new Uri(domainUri));
                 teamProjectCollection.Credentials = CredentialCache.DefaultNetworkCredentials;
                 teamProjectCollection.EnsureAuthenticated();
