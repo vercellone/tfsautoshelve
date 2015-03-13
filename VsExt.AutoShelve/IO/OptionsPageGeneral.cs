@@ -14,8 +14,8 @@ namespace VsExt.AutoShelve.IO {
 
         #region Properties
 
-        [Category(GeneralCat), DisplayName(@"Enabled"), Description("Enabled / disable Auto Shelve")]
-        public bool Enabled { get; set; }
+        [Category(GeneralCat), DisplayName(@"Pause while Debugging"), Description("If False, Auto Shelve will pause while debugging")]
+        public bool PauseWhileDebugging { get; set; }
 
         [Category(GeneralCat), DisplayName(@"Shelveset Name"), Description("Shelve set name used as a string.Format input value where {0}=WorkspaceInfo.Name, {1}=WorkspaceInfo.OwnerName, {2}=DateTime.Now, {3}=Domain of WorkspaceInfo.OwnerName, {4}=UserName of WorkspaceInfo.OwnerName.  IMPORTANT: If you use multiple workspaces, and don't include WorkspaceInfo.Name then only the pending changes in the last workspace will be included in the shelveset. Anything greater than 64 characters will be truncated!")]
         public string ShelvesetName { get; set; }
@@ -51,7 +51,7 @@ namespace VsExt.AutoShelve.IO {
             MaximumShelvesets = 0;
             ShelvesetName = "Auto {0}";
             TimerSaveInterval = 5;
-            Enabled = true;
+            PauseWhileDebugging = false;
         }
 
         protected override void OnApply(PageApplyEventArgs e) {
@@ -60,7 +60,7 @@ namespace VsExt.AutoShelve.IO {
             if (!flag) {
                 var optionsEventArg = new OptionsChangedEventArgs
                 {
-                    Enabled = Enabled,
+                    PauseWhileDebugging = PauseWhileDebugging,
                     Interval = TimerSaveInterval,
                     MaximumShelvesets = MaximumShelvesets,
                 	OutputPane = OutputPane,

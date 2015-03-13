@@ -52,7 +52,8 @@ namespace VsExt.AutoShelve
         private OptionsPageGeneral _options;
         private uint _solutionEventsCookie;
         private IVsSolution2 _solutionService;
-
+        private DebuggerEvents _debuggerEvents;
+        private bool _isPaused;
         /// <summary>
         /// Default constructor of the package.
         /// Inside this method you can place any initialization code that does not require 
@@ -63,6 +64,24 @@ namespace VsExt.AutoShelve
         public VsExtAutoShelvePackage()
         {
             Trace.WriteLine(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this));
+
+            IServiceContainer serviceContainer = this as IServiceContainer;
+            ServiceCreatorCallback callback = new ServiceCreatorCallback(CreateService);
+            serviceContainer.AddService(typeof(SAutoShelveService), callback, true);
+            //serviceContainer.AddService(typeof(SMyLocalService), callback); 
+        }
+
+        private object CreateService(IServiceContainer container, Type serviceType)
+        {
+            if (typeof(SAutoShelveService) == serviceType)
+            {
+                if (_autoShelve == null)
+                    _autoShelve = new TfsAutoShelve(this);
+                return _autoShelve;
+            }
+            //if (typeof(SMyLocalService) == serviceType)
+            //    return new MyLocalService(this);
+            return null;
         }
 
         /////////////////////////////////////////////////////////////////////////////
@@ -112,7 +131,15 @@ namespace VsExt.AutoShelve
 
         private void DisplayRunState()
         {
-            var str1 = string.Format("{0} is{1} running", _extName, _autoShelve.IsRunning ? string.Empty : " not");
+            string str1;
+            if (_isPaused)
+            {
+                str1 = string.Format("{0} paused while Debugging", _extName);
+            }
+            else
+            {
+                str1 = string.Format("{0} is{1} running", _extName, _autoShelve.IsRunning ? string.Empty : " not");
+            }
             WriteToStatusBar(str1);
             WriteLineToOutputWindow(str1);
             ToggleMenuCommandRunStateText(_menuRunState);
@@ -144,6 +171,10 @@ namespace VsExt.AutoShelve
                 {
                     _solutionService.AdviseSolutionEvents(this, out _solutionEventsCookie);
                 }
+				
+                _debuggerEvents = (EnvDTE.DebuggerEvents)_dte.Events.DebuggerEvents;
+                _debuggerEvents.OnEnterRunMode += new _dispDebuggerEvents_OnEnterRunModeEventHandler(OnEnterRunMode); ;
+                _debuggerEvents.OnEnterDesignMode += new _dispDebuggerEvents_OnEnterDesignModeEventHandler(OnEnterDesignMode); ;
 
                 //InitializeOutputWindowPane
                 if (_dte != null
@@ -181,17 +212,13 @@ namespace VsExt.AutoShelve
         {
             try
             {
-                _autoShelve = GetService(typeof(IAutoShelveService)) as TfsAutoShelve;
-                if (_autoShelve == null)
+                _autoShelve = GetGlobalService(typeof(SAutoShelveService)) as TfsAutoShelve;
+                if (_autoShelve != null)
                 {
-                    IServiceContainer serviceContainer = this as IServiceContainer;
-                    _autoShelve = new TfsAutoShelve(serviceContainer);
                     // Property Initialization
                     _autoShelve.MaximumShelvesets = _options.MaximumShelvesets;
                     _autoShelve.ShelvesetName = _options.ShelvesetName;
                     _autoShelve.TimerInterval = _options.TimerSaveInterval;
-
-                    serviceContainer.AddService(typeof(TfsAutoShelve), _autoShelve, true);
                 }
                 AttachEvents();
             }
@@ -208,7 +235,7 @@ namespace VsExt.AutoShelve
             {
                 var commandId = new CommandID(GuidList.GuidAutoShelveCmdSet, PkgCmdIdList.CmdidAutoShelve);
                 var oleMenuCommand = new OleMenuCommand(MenuItemCallbackAutoShelveRunState, commandId);
-                oleMenuCommand.Text = _options.Enabled ? _menuTextRunning : _menuTextStopped;
+                oleMenuCommand.Text = _menuTextStopped;
                 _menuRunState = oleMenuCommand;
                 mcs.AddCommand(_menuRunState);
 
@@ -225,6 +252,7 @@ namespace VsExt.AutoShelve
 
         private void MenuItemCallbackAutoShelveRunState(object sender, System.EventArgs e)
         {
+            _isPaused = false; // this prevents un-pause following a manual start/stop
             if (_autoShelve.IsRunning)
             {
                 _autoShelve.Stop();
@@ -281,15 +309,6 @@ namespace VsExt.AutoShelve
                 _autoShelve.MaximumShelvesets = e.MaximumShelvesets;
                 _autoShelve.ShelvesetName = e.ShelvesetName;
                 _autoShelve.TimerInterval = e.Interval;
-                if (_options.Enabled)
-                {
-                    _autoShelve.CreateShelveset();
-                    _autoShelve.Start();
-                }
-                else if (_autoShelve.IsRunning)
-                {
-                    _autoShelve.Stop();
-                }
             }
         }
 
@@ -342,11 +361,34 @@ namespace VsExt.AutoShelve
 
         #endregion
 
+        #region DebuggerEvents
+
+        private void OnEnterRunMode(dbgEventReason Reason)
+        {
+            if (_options.PauseWhileDebugging && !_isPaused)
+            {
+                _isPaused = true;
+                _autoShelve.Stop();
+            }
+        }
+
+        private void OnEnterDesignMode(dbgEventReason Reason)
+        {
+            if (_isPaused)
+            {
+                _autoShelve.CreateShelveset();
+                _autoShelve.Start();
+                _isPaused = false;
+            }
+        }
+
+        #endregion
+
         #region IVsSolutionEvents
 
         public int OnAfterCloseSolution(object pUnkReserved)
         {
-            if (_autoShelve != null)
+            if (_autoShelve != null && _autoShelve.IsRunning)
             {
                 _autoShelve.CreateShelveset();
             }
@@ -359,7 +401,7 @@ namespace VsExt.AutoShelve
 
         public int OnAfterOpenSolution(object pUnkReserved, int fNewSolution)
         {
-            if (_options.Enabled && !_autoShelve.IsRunning)
+            if (_autoShelve != null && !_autoShelve.IsRunning)
             {
                 _autoShelve.Start();
             }
@@ -402,9 +444,6 @@ namespace VsExt.AutoShelve
             {
                 _solutionService.UnadviseSolutionEvents(_solutionEventsCookie);
             }
-
-            IServiceContainer serviceContainer = this as IServiceContainer;
-            serviceContainer.RemoveService(typeof(TfsAutoShelve), false);
 
             base.Dispose(disposeManaged);
         }

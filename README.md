@@ -8,21 +8,21 @@ Protect your code by guaranteeing your pending changes are always backed up to t
 
 ###Announcing v4.0 - Improvements:
 
-1. Multiple instances of Visual Studio leverage a single, shared TfsAutoShelve service.
-2. Auto shelving occurs at the configured intervals if you have _any_ solution open (source controlled or not) in one or more VS instance with 2 exceptions, of which both require a manual toggle to resume:
+1. Auto shelving occurs at the configured intervals if you have _any_ solution open (source controlled or not) in one or more VS instance with 2 exceptions, of which both require a manual toggle to resume:
   1. You toggle it off manually.
   2. If a significant error occurs (typically a TFS connection error), then it will stop to avoid incessant errors.
-3. Shelvesets are no longer created if nothing has changed since the last Shelveset.
+2. Shelvesets are no longer created if nothing has changed since the last Shelveset.
   1. If you choose to "Shelve Now" (Ctrl-T), the delta detection is bypassed.  A Shelveset is created even if nothing has changed.
   2. If the number of pending changes is not equal to the number of items in the latest Shelveset, a Shelveset is created.
   3. If any single pending change exists that is not in the latest Shelveset, a Shelveset is created.
   4. If any single pending change exists with an UploadHashValue not equal to the HashValue of the local item's current content, a Shelveset is created.
-  5. If any single pending change exists and the local item does not exist (deleted) or cannot be evaluated, a Shelveset is created.
-4. A Shelveset is no longer created upon initialization.  Instead it will be deferred until the first configured interval has lapsed.
-5. Shelveset Name now supports {3} and {4} as placeholders for the worspace owner name's domain and user values split respectively.  Since slashes are invalid/stripped this allows you to use {3}-{4} or whatever other valid delimiting character you choose.
-6. Interval was changed from an integer to a double to allow the number of minutes to be specied as a decimal.  Useful for testing if nothing else.
-7. SuppressDialogs/MessageBoxes removed: The only MessageBox remaining is a conditional warning on the Tools->Options page that never considered the SuppressDialogs setting.
-
+  5. If any single pending change exists and the local item does not exist (deleted), the UploadHashValue is compared to the HashValue at Checkout time.
+3. A Shelveset is no longer created upon initialization.  Instead it will be deferred until the first configured interval has lapsed.
+4. Shelveset Name now supports {3} and {4} as placeholders for the worspace owner name's domain and user values split respectively.  Since slashes are invalid/stripped this allows you to use {3}-{4} or whatever other valid delimiting character you choose.
+5. Interval was changed from an integer to a double to allow the number of minutes to be specied as a decimal.  Useful for testing if nothing else.
+6. SuppressDialogs/MessageBoxes removed: The only MessageBox remaining is a conditional warning on the Tools->Options page that never considered the SuppressDialogs setting.
+7. TfsAutoShelve is exposed as a global service, available from other VSPackages:
+  1. IAutoShelveService shelvesvc = Package.GetGlobalService(typeof(SAutoShelveService)) as IAutoShelveService;
 ---
 
 ####What it does
@@ -44,7 +44,7 @@ Protect your code by guaranteeing your pending changes are always backed up to t
         *   Team Menu -> TFS Auto Shelve Now
 *   Options
     *   Tools Menu -> Options -> TFS Auto Shelve Options
-        *   _Enabled_ - **New in v4.0**: Redundant on/off switch - but it serves as any easy way to store the state between VS sessions for the shared service.
+        *   _PauseWhileDebugging_ - **New in v4.0**: When enabled, shelving will not occur while debugging and will shelve immediately on return to design mode
         *   _Interval_ - The interval (in minutes) which automatic shelving will occur
         *   _Shelveset Name_ - string.Format input expression for deriving the unique Shelveset name.  By default it is "Auto-{1}" where {0}=WorkspaceInfo.Name, {1}=WorkspaceInfo.OwnerName, {2}=DateTime.Now, {3}=Domain of WorkspaceInfo.OwnerName, {4}=UserName of WorkspaceInfo.OwnerName. 
 **WARNING: The default was changed to "Auto {0}" to help prevent this.  But, if you are upgrading be warned that if your Shelveset name does not include {0} and you use multiple workspaces then only 1 workspace's changes will be saved.**
@@ -57,6 +57,6 @@ Protect your code by guaranteeing your pending changes are always backed up to t
 *   To view Shelvesets, open Source Control Explorer, click on:
     *   File > Source Control > Unshelve Pending Changes
 *   Workspaces can be modified by:
-    *   Opening the Source Control Explorer > Clicking on Workspaces drop down > Click Workspaces > Click Add/Edit/Removed
+    *   Opening the Source Control Explorer > Clicking on Workspaces drop down > Click Workspaces > Click Add/Edit/Remove
 *   Custom Visual Studio Activity Logging is implemented. If you run into any errors, please startup Visual Studio with the /log switch, re-create the error, then close Visual Studio. You can browse to "%AppData%\Microsoft\VisualStudio\12.0\ActivityLog.XML" 
  to view the log.

@@ -13,7 +13,7 @@ using System.Collections.Generic;
 // Ref http://visualstudiogallery.msdn.microsoft.com/080540cb-e35f-4651-b71c-86c73e4a633d
 namespace VsExt.AutoShelve
 {
-    public class TfsAutoShelve : IAutoShelveService, IDisposable
+    public class TfsAutoShelve : SAutoShelveService, IAutoShelveService, IDisposable
     {
         private Timer _timer;
         private IServiceProvider serviceProvider;
@@ -76,7 +76,7 @@ namespace VsExt.AutoShelve
             try
             {
                 if (TfsExt == null) return;
-                var domainUri = _tfsExt.ActiveProjectContext.DomainUri;
+                var domainUri = WebUtility.UrlDecode(_tfsExt.ActiveProjectContext.DomainUri);
                 var teamProjectCollection = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(new Uri(domainUri));
                 teamProjectCollection.Credentials = CredentialCache.DefaultNetworkCredentials;
                 teamProjectCollection.EnsureAuthenticated();
