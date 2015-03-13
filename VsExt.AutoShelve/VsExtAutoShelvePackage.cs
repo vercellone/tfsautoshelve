@@ -114,9 +114,10 @@ namespace VsExt.AutoShelve
             }
         }
 
-        private void autoShelve_OnTfsConnectionError(object sender, System.EventArgs e)
+        private void autoShelve_OnTfsConnectionError(object sender, TfsConnectionErrorEventArgs e)
         {
             WriteLineToOutputWindow(Resources.ErrorNotConnected);
+            WriteException(e.ConnectionError);
         }
 
         private void autoShelve_OnStart(object sender, System.EventArgs e)

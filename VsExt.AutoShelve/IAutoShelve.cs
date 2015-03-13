@@ -21,7 +21,7 @@ namespace VsExt.AutoShelve {
         void Stop();
 
         event EventHandler<VsExt.AutoShelve.EventArgs.ShelvesetCreatedEventArgs> OnShelvesetCreated;
-        event EventHandler OnTfsConnectionError;
+        event EventHandler<VsExt.AutoShelve.EventArgs.TfsConnectionErrorEventArgs> OnTfsConnectionError;
         event EventHandler OnStart;
         event EventHandler OnStop;
     }

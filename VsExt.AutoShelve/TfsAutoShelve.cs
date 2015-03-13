@@ -108,7 +108,7 @@ namespace VsExt.AutoShelve
 
         public event EventHandler<ShelvesetCreatedEventArgs> OnShelvesetCreated;
 
-        public event EventHandler OnTfsConnectionError;
+        public event EventHandler<TfsConnectionErrorEventArgs> OnTfsConnectionError;
 
         public event EventHandler OnStart;
 
@@ -130,19 +130,21 @@ namespace VsExt.AutoShelve
             get
             {
                 if (_tfsExt != null) return _tfsExt;
-                DTE2 dte = (DTE2)this.serviceProvider.GetService(typeof(DTE));
-                var obj = (TeamFoundationServerExt)dte.GetObject("Microsoft.VisualStudio.TeamFoundation.TeamFoundationServerExt");
-                if (obj.ActiveProjectContext.DomainUri != null && obj.ActiveProjectContext.ProjectUri != null)
+                try
                 {
-                    _tfsExt = obj;
+                    DTE2 dte = (DTE2)this.serviceProvider.GetService(typeof(DTE));
+                    var obj = (TeamFoundationServerExt)dte.GetObject("Microsoft.VisualStudio.TeamFoundation.TeamFoundationServerExt");
+                    if (obj.ActiveProjectContext.DomainUri == null)
+                        throw new NullReferenceException("Microsoft.VisualStudio.TeamFoundation.TeamFoundationServerExt.ActiveProjectContext.DomainUri cannot be null");
+                    else 
+                        _tfsExt = obj;
                 }
-                else
+                catch (Exception ex)
                 {
-                    _tfsExt = null;
                     Stop();  // Disable timer to prevent Ref: Q&A "endless error dialogs" @ http://visualstudiogallery.msdn.microsoft.com/080540cb-e35f-4651-b71c-86c73e4a633d 
                     if (OnTfsConnectionError != null)
                     {
-                        OnTfsConnectionError(this, new System.EventArgs());
+                        OnTfsConnectionError(this, new TfsConnectionErrorEventArgs{ConnectionError = ex });
                     }
                 }
                 return _tfsExt;
