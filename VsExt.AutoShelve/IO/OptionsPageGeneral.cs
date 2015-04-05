@@ -17,8 +17,19 @@ namespace VsExt.AutoShelve.IO {
         [Category(GeneralCat), DisplayName(@"Pause while Debugging"), Description("If False, Auto Shelve will pause while debugging")]
         public bool PauseWhileDebugging { get; set; }
 
+        private string _shelveSetName;
         [Category(GeneralCat), DisplayName(@"Shelveset Name"), Description("Shelve set name used as a string.Format input value where {0}=WorkspaceInfo.Name, {1}=WorkspaceInfo.OwnerName, {2}=DateTime.Now, {3}=Domain of WorkspaceInfo.OwnerName, {4}=UserName of WorkspaceInfo.OwnerName.  IMPORTANT: If you use multiple workspaces, and don't include WorkspaceInfo.Name then only the pending changes in the last workspace will be included in the shelveset. Anything greater than 64 characters will be truncated!")]
-        public string ShelvesetName { get; set; }
+        public string ShelvesetName { 
+            get { 
+                if (String.IsNullOrWhiteSpace(_shelveSetName)) {
+                    _shelveSetName = "Auto {0}";
+                }
+                return _shelveSetName;
+            }
+            set {
+                _shelveSetName = value;
+            } 
+        }
 
         private double _interval;
 
