@@ -14,29 +14,40 @@ namespace VsExt.AutoShelve.IO {
 
         #region Properties
 
-        [Category(GeneralCat), DisplayName(@"Shelveset Name"), Description("Shelve set name used as a string.Format input value where {0}=WorkspaceInfo.Name, {1}=WorkspaceInfo.OwnerName, {2}=DateTime.Now.  IMPORTANT: If you use multiple workspaces, and don't include WorkspaceInfo.Name then only the pending changes in the last workspace will be included in the shelveset. Anything greater than 64 characters will be truncated!")]
-        public string ShelvesetName { get; set; }
+        [Category(GeneralCat), DisplayName(@"Pause while Debugging"), Description("If False, Auto Shelve will pause while debugging")]
+        public bool PauseWhileDebugging { get; set; }
 
-        private int _interval;
+        private string _shelveSetName;
+        [Category(GeneralCat), DisplayName(@"Shelveset Name"), Description("Shelve set name used as a string.Format input value where {0}=WorkspaceInfo.Name, {1}=WorkspaceInfo.OwnerName, {2}=DateTime.Now, {3}=Domain of WorkspaceInfo.OwnerName, {4}=UserName of WorkspaceInfo.OwnerName.  IMPORTANT: If you use multiple workspaces, and don't include WorkspaceInfo.Name then only the pending changes in the last workspace will be included in the shelveset. Anything greater than 64 characters will be truncated!")]
+        public string ShelvesetName { 
+            get { 
+                if (String.IsNullOrWhiteSpace(_shelveSetName)) {
+                    _shelveSetName = "Auto {0}";
+                }
+                return _shelveSetName;
+            }
+            set {
+                _shelveSetName = value;
+            } 
+        }
+
+        private double _interval;
 
         [Category(GeneralCat)]
         [DisplayName(@"Interval")]
         [Description("The interval (in minutes) between shelvesets when running.")]
-        public int TimerSaveInterval {
+        public double TimerSaveInterval {
             get {
                 return _interval;
             }
             set {
                 if (value <= 0) {
-                    WinFormsHelper.ShowMessageBox("TimerSaveInterval must be greater than 0.", "Error - TFS Auto Shelve Settings", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+                    WinFormsHelper.ShowMessageBox("TimerSaveInterval must be greater than 0.", string.Format("Error - {0} Settings", Resources.ExtensionName), MessageBoxButtons.OK, MessageBoxIcon.Hand);
                 } else {
                     _interval = value;
                 }
             }
         }
-
-        [Category(GeneralCat), DisplayName(@"Suppress Dialogs"), Description("Suppress run time dialogs.  Currently just the nagging 'Please connect to a Team Project first.' MessageBox")]
-        public bool SuppressDialogs { get; set; }
 
         [Category(GeneralCat), DisplayName(@"Output Pane"), Description("Output window pane to write status messages.  If you set this to an empty string, nothing is written to the Output window.  Note: Regardless, the output pane is no longer explicitly activated.  So, no more focus stealing!")]
         public string OutputPane { get; set; }
@@ -47,11 +58,11 @@ namespace VsExt.AutoShelve.IO {
         #endregion
 
         public OptionsPageGeneral() {
-            OutputPane = "TFS Auto Shelve";
+            OutputPane = Resources.ExtensionName;
             MaximumShelvesets = 0;
             ShelvesetName = "Auto {0}";
             TimerSaveInterval = 5;
-            SuppressDialogs = true;
+            PauseWhileDebugging = false;
         }
 
         protected override void OnApply(PageApplyEventArgs e) {
@@ -60,11 +71,11 @@ namespace VsExt.AutoShelve.IO {
             if (!flag) {
                 var optionsEventArg = new OptionsChangedEventArgs
                 {
+                    PauseWhileDebugging = PauseWhileDebugging,
                     Interval = TimerSaveInterval,
                     MaximumShelvesets = MaximumShelvesets,
                 	OutputPane = OutputPane,
                     ShelvesetName = ShelvesetName,
-                    SuppressDialogs = SuppressDialogs
                 };
                 OnOptionsChanged(this, optionsEventArg);
             }
