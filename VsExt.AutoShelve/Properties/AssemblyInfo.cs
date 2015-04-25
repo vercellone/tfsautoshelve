@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("VsExt.AutoShelve")]
 [assembly: AssemblyCompany("Jason Vercellone")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCopyright("2013")]
+[assembly: AssemblyCopyright("2015")]
 [assembly: AssemblyDescription("Automatically backup all workspace pending changes to the TFS server via a shelveset.")]
 [assembly: AssemblyProduct("TFS Auto Shelve")]
 [assembly: AssemblyTrademark("")]

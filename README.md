@@ -1,12 +1,15 @@
 #tfsautoshelve
 
-##TFS Auto Shelve Extension for Visual Studio 2013
+##TFS Auto Shelve Extension for Visual Studio 2015
 
 Protect your code by guaranteeing your pending changes are always backed up to the TFS server.
 
 ---
+### v5.0
 
-###Announcing v4.0 - Improvements:
+Visual Studio 2015 compatible version.
+
+### v4.0
 
 1. Auto shelving occurs at the configured intervals if you have _any_ solution open (source controlled or not) in one or more VS instance with 2 exceptions, of which both require a manual toggle to resume:
   1. You toggle it off manually.
