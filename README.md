@@ -21,7 +21,7 @@ Visual Studio 2015 compatible version.
   4. If any single pending change exists with an UploadHashValue not equal to the HashValue of the local item's current content, a Shelveset is created.
   5. If any single pending change exists and the local item does not exist (deleted), the UploadHashValue is compared to the HashValue at Checkout time.
 3. A Shelveset is no longer created upon initialization.  Instead it will be deferred until the first configured interval has lapsed.
-4. Shelveset Name now supports {3} and {4} as placeholders for the worspace owner name's domain and user values split respectively.  Since slashes are invalid/stripped this allows you to use {3}-{4} or whatever other valid delimiting character you choose.
+4. Shelveset Name now supports {3} and {4} as placeholders for the workspace owner name's domain and user values split respectively.  Since slashes are invalid/stripped this allows you to use {3}-{4} or whatever other valid delimiting character you choose.
 5. Interval was changed from an integer to a double to allow the number of minutes to be specied as a decimal.  Useful for testing if nothing else.
 6. SuppressDialogs/MessageBoxes removed: The only MessageBox remaining is a conditional warning on the Tools->Options page that never considered the SuppressDialogs setting.
 7. TfsAutoShelve is exposed as a global service, available from other VSPackages:
@@ -38,7 +38,7 @@ Visual Studio 2015 compatible version.
 ####Functionality
 
 *   Automatic Shelving
-    *   Begins when _any_ solution ~~mapped to TFS~~ is opened in Visual Studio
+    *   Begins when _any_ solution is opened in Visual Studio
 		*  Team Menu allows you to turn on/off automatic shelving
             *   Team Menu -> TFS Auto Shelve (Running)
 			*   Team Menu -> TFS Auto Shelve (Not Running)
@@ -49,8 +49,8 @@ Visual Studio 2015 compatible version.
     *   Tools Menu -> Options -> TFS Auto Shelve Options
         *   _PauseWhileDebugging_ - **New in v4.0**: When enabled, shelving will not occur while debugging and will shelve immediately on return to design mode
         *   _Interval_ - The interval (in minutes) which automatic shelving will occur
-        *   _Shelveset Name_ - string.Format input expression for deriving the unique Shelveset name.  By default it is "Auto-{1}" where {0}=WorkspaceInfo.Name, {1}=WorkspaceInfo.OwnerName, {2}=DateTime.Now, {3}=Domain of WorkspaceInfo.OwnerName, {4}=UserName of WorkspaceInfo.OwnerName. 
-**WARNING: The default was changed to "Auto {0}" to help prevent this.  But, if you are upgrading be warned that if your Shelveset name does not include {0} and you use multiple workspaces then only 1 workspace's changes will be saved.**
+        *   _Shelveset Name_ - string.Format input expression for deriving the unique Shelveset name.  By default it is "Auto-{0}" where {0}=WorkspaceInfo.Name, {1}=WorkspaceInfo.OwnerName, {2}=DateTime.Now, {3}=Domain of WorkspaceInfo.OwnerName, {4}=UserName of WorkspaceInfo.OwnerName. 
+**WARNING: If you are upgrading be warned that if your Shelveset name does not include {0} and you use multiple workspaces then only 1 workspace's changes will be saved.**
         *   _Maximum Shelvesets _- **New in v3.3**: Maximum number of Shelvesets to retain. Older Shelvesets will be deleted.  Note: ShelvesetName must include a {2}(DateTime.Now
  component) unique enough to generate more than the maximum for this to have any impact.  If {0} (WorkspaceInfo.Name) is included, then the max is applied per workspace.
 **Note**: The ShelvesetName expression supports Composite Formatting.  For example, {2:hh} if you want to include just a 2 digit hour in the name.  Or, {2:yyyyMMdd} for a sortable date value.
@@ -61,5 +61,5 @@ Visual Studio 2015 compatible version.
     *   File > Source Control > Unshelve Pending Changes
 *   Workspaces can be modified by:
     *   Opening the Source Control Explorer > Clicking on Workspaces drop down > Click Workspaces > Click Add/Edit/Remove
-*   Custom Visual Studio Activity Logging is implemented. If you run into any errors, please startup Visual Studio with the /log switch, re-create the error, then close Visual Studio. You can browse to "%AppData%\Microsoft\VisualStudio\12.0\ActivityLog.XML" 
+*   Custom Visual Studio Activity Logging is implemented. If you run into any errors, please startup Visual Studio with the /log switch, re-create the error, then close Visual Studio. You can browse to "%AppData%\Microsoft\VisualStudio\14.0\ActivityLog.XML" 
  to view the log.
