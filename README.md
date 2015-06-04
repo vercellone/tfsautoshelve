@@ -5,6 +5,10 @@
 Protect your code by guaranteeing your pending changes are always backed up to the TFS server.
 
 ---
+### v5.1
+
+Bug Fix #11 Dispose error on close of Visual Studio
+
 ### v5.0
 
 Visual Studio 2015 compatible version.

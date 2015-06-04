@@ -441,9 +441,11 @@ namespace VsExt.AutoShelve
         {
             DetachEvents();
 
-            if (_solutionService != null)
+            if (_solutionService != null && _solutionEventsCookie != 0)
             {
                 _solutionService.UnadviseSolutionEvents(_solutionEventsCookie);
+                _solutionEventsCookie = 0;
+                _solutionService = null;
             }
 
             base.Dispose(disposeManaged);
