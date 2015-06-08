@@ -1,5 +1,7 @@
 #tfsautoshelve
 
+[![Build status](https://ci.appveyor.com/api/projects/status/ornwijwtoy41wpg6?svg=true)](https://ci.appveyor.com/project/vercellone/tfsautoshelve)
+
 ##TFS Auto Shelve Extension for Visual Studio 2015
 
 Protect your code by guaranteeing your pending changes are always backed up to the TFS server.
