@@ -49,7 +49,7 @@ configuration: Release
 #  - Release
 
 build:
-  project: VsExt.AutoShelve.sln      # path to Visual Studio solution or project
+  project: VsExt.AutoShelve\VsExt.AutoShelve.csproj   # path to Visual Studio solution or project
   # MSBuild verbosity level quiet|minimal|normal|detailed
   verbosity: minimal
 
