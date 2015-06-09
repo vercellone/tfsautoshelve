@@ -1,11 +1,11 @@
-﻿using System;
+﻿using System; 
+using System.Windows.Threading; 
+using Microsoft.VisualStudio.Shell; 
+using Microsoft.VisualStudio.Shell.Interop; 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.VSSDK.Tools.VsIdeTesting;
-using Microsoft.VisualStudio.Shell.Interop;
-using VsExt.AutoShelve;
-using VsExt.AutoShelve.Packaging;
 
-namespace VsExt.AutoShelve_IntegrationTests {
+namespace VsExt.AutoShelve_IntegrationTests
+{
     /// <summary>
     /// Integration test for package validation
     /// </summary>
@@ -19,22 +19,31 @@ namespace VsExt.AutoShelve_IntegrationTests {
         ///</summary>
         public TestContext TestContext { get; set; }
 
+        protected static IServiceProvider ServiceProvider { get; private set; }
+        protected static Dispatcher UIThreadDispatcher { get; private set; }
+
+        [AssemblyInitialize]
+        public static void AssemblyInitialize(TestContext context) {
+            ThreadHelper.Generic.Invoke(delegate
+            {
+                UIThreadDispatcher = Dispatcher.CurrentDispatcher;
+            });
+        }
+
         [TestMethod]
         [HostType("VS IDE")]
         public void PackageLoadTest() {
-            UIThreadInvoker.Invoke((ThreadInvoker)delegate
-            {
+            //Get the Shell Service
+            var serviceProvider = Microsoft.VisualStudio.Shell.ServiceProvider.GlobalProvider;
 
-                //Get the Shell Service
-                var shellService = VsIdeTestHostContext.ServiceProvider.GetService(typeof(SVsShell)) as IVsShell;
-                Assert.IsNotNull(shellService);
+            var shellService = (IVsShell)serviceProvider.GetService(typeof(SVsShell));
+            Assert.IsNotNull(shellService);
 
-                //Validate package load
-                IVsPackage package;
-                var packageGuid = new Guid(GuidList.GuidAutoShelvePkgString);
-                Assert.IsTrue(0 == shellService.LoadPackage(ref packageGuid, out package));
-                Assert.IsNotNull(package, "Package failed to load");
-            });
+            //Validate package load
+            IVsPackage package;
+            var packageGuid = new Guid(AutoShelve.Packaging.GuidList.GuidAutoShelvePkgString);
+            Assert.IsTrue(0 == shellService.LoadPackage(ref packageGuid, out package));
+            Assert.IsNotNull(package, "Package failed to load");
         }
     }
 }

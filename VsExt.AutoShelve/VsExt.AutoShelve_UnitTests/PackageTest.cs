@@ -27,25 +27,5 @@ namespace VsExt.AutoShelve_UnitTests {
             Assert.IsNotNull(package as IVsPackage, "The object does not implement IVsPackage");
         }
 
-        [TestMethod]
-        public void SetSite() {
-            // Create the package
-            var package = new VsExtAutoShelvePackage() as IVsPackage;
-            Assert.IsNotNull(package, "The object does not implement IVsPackage");
-
-            // Create a basic service provider
-            var serviceProvider = OleServiceProvider.CreateOleServiceProviderWithBasicServices();
-
-            var activityLogMock = new GenericMockFactory("MockVsActivityLog", new[] { typeof(Microsoft.VisualStudio.Shell.Interop.IVsActivityLog) }).GetInstance();
-
-            serviceProvider.AddService(typeof (Microsoft.VisualStudio.Shell.Interop.SVsActivityLog), activityLogMock, true);
-
-            // Site the package
-            Assert.AreEqual(0, package.SetSite(serviceProvider), "SetSite did not return S_OK");
-
-            // Unsite the package
-            Assert.AreEqual(0, package.SetSite(null), "SetSite(null) did not return S_OK");
-        }
-
     }
 }
