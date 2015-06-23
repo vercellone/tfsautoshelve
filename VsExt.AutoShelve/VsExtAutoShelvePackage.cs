@@ -36,7 +36,7 @@ namespace VsExt.AutoShelve
     [ProvideService(typeof(TfsAutoShelve))]
     // This attribute is used to register the information needed to show this package
     // in the Help/About dialog of Visual Studio.
-    [InstalledProductRegistration("#110", "#112", "4.0", IconResourceID = 400)]
+    [InstalledProductRegistration("#110", "#112", "4.2", IconResourceID = 400)]
     [Guid(GuidList.GuidAutoShelvePkgString)]
     public class VsExtAutoShelvePackage : Package, IVsSolutionEvents, IDisposable
     {
@@ -441,9 +441,11 @@ namespace VsExt.AutoShelve
         {
             DetachEvents();
 
-            if (_solutionService != null)
+            if (_solutionService != null && _solutionEventsCookie != 0)
             {
                 _solutionService.UnadviseSolutionEvents(_solutionEventsCookie);
+                _solutionEventsCookie = 0;
+                _solutionService = null;
             }
 
             base.Dispose(disposeManaged);
