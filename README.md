@@ -1,5 +1,6 @@
 #tfsautoshelve
 
+[![Build status](https://ci.appveyor.com/api/projects/status/ornwijwtoy41wpg6?svg=true)](https://ci.appveyor.com/project/vercellone/tfsautoshelve)
 
 ##TFS Auto Shelve Extension for Visual Studio 2013
 
