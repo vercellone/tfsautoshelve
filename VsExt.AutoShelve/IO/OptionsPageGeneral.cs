@@ -14,7 +14,7 @@ namespace VsExt.AutoShelve.IO {
 
         #region Properties
 
-        [Category(GeneralCat), DisplayName(@"Pause while Debugging"), Description("If False, Auto Shelve will pause while debugging")]
+        [Category(GeneralCat), DisplayName(@"Pause while Debugging"), Description("If True, Auto Shelve will pause while debugging")]
         public bool PauseWhileDebugging { get; set; }
 
         private string _shelveSetName;
