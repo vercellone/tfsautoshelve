@@ -11,11 +11,13 @@ namespace VsExt.AutoShelve
 {
     public static class TfsExtensions
     {
-        public static bool HaveChanged(this PendingChange[] changes)
+        public static bool DifferFrom(this PendingChange[] changes, PendingChange[] shelvedchanges)
         {
-            foreach (var change in changes)
+            var recentChanges = changes.OrderByDescending(c => GetLastChangeDate(c)).Take(10);
+            var shelveditems = shelvedchanges.ToList().ToDictionary(c => c.ServerItem);
+            foreach (var change in recentChanges)
             {
-                if (!change.UploadHashValue.SequenceEqual(GetMD5HashValue(change)))
+                if (!shelveditems.ContainsKey(change.ServerItem) || !shelveditems[change.ServerItem].UploadHashValue.SequenceEqual(GetMD5HashValue(change)))
                 {
                     return true;
                 }
@@ -23,15 +25,27 @@ namespace VsExt.AutoShelve
             return false;
         }
 
-        private static byte[] GetMD5HashValue(PendingChange change)
+        private static DateTime GetLastChangeDate(PendingChange change)
         {
-            if (File.Exists(change.LocalItem))
+            if (change.IsDelete)
             {
-                return MD5.Create().ComputeHash(File.ReadAllBytes(change.LocalItem));
+                return change.CreationDate;
             }
             else
             {
-                return change.HashValue;
+                return File.GetLastWriteTime(change.LocalItem);
+            }
+        }
+
+        private static byte[] GetMD5HashValue(PendingChange change)
+        {
+            if (change.IsDelete || !File.Exists(change.LocalItem) )
+            {
+                return change.UploadHashValue;
+            }
+            else
+            {
+                return MD5.Create().ComputeHash(File.ReadAllBytes(change.LocalItem));
             }
         }
 

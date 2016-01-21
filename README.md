@@ -7,6 +7,10 @@
 Protect your code by guaranteeing your pending changes are always backed up to the TFS server.
 
 ---
+### v5.2
+
+Bug Fix #14 Redundant shelvesets
+
 ### v5.1
 
 Bug Fix #11 Dispose error on close of Visual Studio

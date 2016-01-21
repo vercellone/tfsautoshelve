@@ -188,8 +188,9 @@ namespace VsExt.AutoShelve
                     // Compare numPending to numItemsShelved;  Force shelveset if they differ
                     // Otherwise, resort to comparing file HashValues
                     var lastShelveset = GetPastShelvesets(service, workspace).FirstOrDefault();
-                    int numItemsShelved = lastShelveset == null ? 0 : service.QueryShelvedChanges(lastShelveset).Sum(x => x.PendingChanges.Count());
-                    isDelta = (numPending != numItemsShelved) || pendingChanges.HaveChanged();
+                    var shelvedChanges = service.QueryShelvedChanges(lastShelveset)[0].PendingChanges;
+                    int numItemsShelved = lastShelveset == null ? 0 : shelvedChanges.Count();
+                    isDelta = (numPending != numItemsShelved) || pendingChanges.DifferFrom(shelvedChanges);
                 }
                 autoShelveEventArg.ShelvesetChangeCount = (force || isDelta) ? numPending : 0;
                 if (force || isDelta)

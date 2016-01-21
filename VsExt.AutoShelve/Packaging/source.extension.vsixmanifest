@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="BAEA1B9D-EDFE-41CB-A233-F9453BBAC7DA" Version="5.1" Language="en-US" Publisher="Jason Vercellone" />
+    <Identity Id="BAEA1B9D-EDFE-41CB-A233-F9453BBAC7DA" Version="5.2" Language="en-US" Publisher="Jason Vercellone" />
     <DisplayName>TFS Auto Shelve for Visual Studio 2015</DisplayName>
     <Description xml:space="preserve">Create a shelveset for the latest version of all pending changes, automatically.  Pending changes from the local TFS workspaces will be shelved to the TFS Server every "x" number of minutes.</Description>
     <Icon>Images\AutoShelve.png</Icon>
