@@ -7,6 +7,11 @@
  Protect your code by guaranteeing your pending changes are always backed up to the TFS server.
 
 ---
+### v5.3
+
+Bug Fix #15 Index was outside the bounds of the array. OR Value cannot be null. Parameter name: shelveset
+Bug Fix #16 Shelvesets create with no (0) pending changes
+
 ### v5.2
 
 Bug Fix #14 Redundant shelvesets

@@ -175,6 +175,7 @@ namespace VsExt.AutoShelve
         {
             // Build event args for notification create shelveset result
             var autoShelveEventArg = new ShelvesetCreatedEventArgs();
+            autoShelveEventArg.ShelvesetChangeCount = 0; // Shouldn't be necessary, but forcing it to be safe.
 
             try
             {
@@ -183,35 +184,45 @@ namespace VsExt.AutoShelve
                 var pendingChanges = workspace.GetPendingChanges();
                 int numPending = pendingChanges.Count();
 
-                if (!force && numPending > 0)
+                if (numPending > 0)
                 {
-                    // Compare numPending to numItemsShelved;  Force shelveset if they differ
-                    // Otherwise, resort to comparing file HashValues
-                    var lastShelveset = GetPastShelvesets(service, workspace).FirstOrDefault();
-                    var shelvedChanges = service.QueryShelvedChanges(lastShelveset)[0].PendingChanges;
-                    int numItemsShelved = lastShelveset == null ? 0 : shelvedChanges.Count();
-                    isDelta = (numPending != numItemsShelved) || pendingChanges.DifferFrom(shelvedChanges);
-                }
-                autoShelveEventArg.ShelvesetChangeCount = (force || isDelta) ? numPending : 0;
-                if (force || isDelta)
-                {
-                    // Build a new, valid shelve set name
-                    var setname = string.Format(ShelvesetName, workspace.Name, workspace.OwnerName, DateTime.Now, workspace.OwnerName.GetDomain(), workspace.OwnerName.GetLogin());
-                    setname = CleanShelvesetName(setname);
-
-                    // Actually create a new Shelveset 
-                    var shelveset = new Shelveset(service, setname, workspace.OwnerName);
-                    autoShelveEventArg.ShelvesetName = setname;
-                    shelveset.Comment = string.Format("Shelved by {0}. {1} items", _extensionName, numPending);
-                    workspace.Shelve(shelveset, pendingChanges, ShelvingOptions.Replace);
-
-                    // Clean up past Shelvesets
-                    if (MaximumShelvesets > 0)
+                    if (!force)
                     {
-                        foreach (var set in GetPastShelvesets(service, workspace).Skip(MaximumShelvesets))
+                        var lastShelveset = GetPastShelvesets(service, workspace).FirstOrDefault();
+                        if (lastShelveset == null)
                         {
-                            service.DeleteShelveset(set);
-                            autoShelveEventArg.ShelvesetsPurgeCount++;
+                            // If there are pending changes and no shelveset yet exists, then create shelveset.
+                            isDelta = true;
+                        } else
+                        {
+                            // Compare numPending to shelvedChanges.Count();  Force shelveset if they differ
+                            // Otherwise, resort to comparing file HashValues
+                            var shelvedChanges = service.QueryShelvedChanges(lastShelveset).FirstOrDefault();
+                            isDelta = (shelvedChanges == null || numPending != shelvedChanges.PendingChanges.Count()) || pendingChanges.DifferFrom(shelvedChanges.PendingChanges);
+                        }
+                    }
+                    if (force || isDelta)
+                    {
+                        autoShelveEventArg.ShelvesetChangeCount = numPending;
+
+                        // Build a new, valid shelve set name
+                        var setname = string.Format(ShelvesetName, workspace.Name, workspace.OwnerName, DateTime.Now, workspace.OwnerName.GetDomain(), workspace.OwnerName.GetLogin());
+                        setname = CleanShelvesetName(setname);
+
+                        // Actually create a new Shelveset 
+                        var shelveset = new Shelveset(service, setname, workspace.OwnerName);
+                        autoShelveEventArg.ShelvesetName = setname;
+                        shelveset.Comment = string.Format("Shelved by {0}. {1} items", _extensionName, numPending);
+                        workspace.Shelve(shelveset, pendingChanges, ShelvingOptions.Replace);
+
+                        // Clean up past Shelvesets
+                        if (MaximumShelvesets > 0)
+                        {
+                            foreach (var set in GetPastShelvesets(service, workspace).Skip(MaximumShelvesets))
+                            {
+                                service.DeleteShelveset(set);
+                                autoShelveEventArg.ShelvesetsPurgeCount++;
+                            }
                         }
                     }
                 }
