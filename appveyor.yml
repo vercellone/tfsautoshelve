@@ -79,7 +79,7 @@ artifacts:
 
   # pushing a single file
   - path: .\VsExt.AutoShelve\bin\$(configuration)\VsExt.AutoShelve.vsix
-    name: VsExt.AutoShelve.vsix
+    name: VsExt.AutoShelve.$(version).vsix
   # pushing a single file with environment variable in path and "Deployment name" specified
   # zips all the bin\release folder as output.zip
   #- path: .\bin\$(configuration)
