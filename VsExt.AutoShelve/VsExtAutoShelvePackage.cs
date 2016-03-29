@@ -36,7 +36,7 @@ namespace VsExt.AutoShelve
     [ProvideService(typeof(TfsAutoShelve))]
     // This attribute is used to register the information needed to show this package
     // in the Help/About dialog of Visual Studio.
-    [InstalledProductRegistration("#110", "#112", "5.3", IconResourceID = 400)]
+    [InstalledProductRegistration("#110", "#112", "5.4", IconResourceID = 400)]
     [Guid(GuidList.GuidAutoShelvePkgString)]
     public class VsExtAutoShelvePackage : Package, IVsSolutionEvents, IDisposable
     {
@@ -211,22 +211,15 @@ namespace VsExt.AutoShelve
         /// </remarks>
         private void InitializeAutoShelve()
         {
-            try
+            _autoShelve = GetGlobalService(typeof(SAutoShelveService)) as TfsAutoShelve;
+            if (_autoShelve != null)
             {
-                _autoShelve = GetGlobalService(typeof(SAutoShelveService)) as TfsAutoShelve;
-                if (_autoShelve != null)
-                {
-                    // Property Initialization
-                    _autoShelve.MaximumShelvesets = _options.MaximumShelvesets;
-                    _autoShelve.ShelvesetName = _options.ShelvesetName;
-                    _autoShelve.TimerInterval = _options.TimerSaveInterval;
-                }
-                AttachEvents();
+                // Property Initialization
+                _autoShelve.MaximumShelvesets = _options.MaximumShelvesets;
+                _autoShelve.ShelvesetName = _options.ShelvesetName;
+                _autoShelve.TimerInterval = _options.TimerSaveInterval;
             }
-            catch (Exception ex)
-            {
-                WriteException(ex);
-            }
+            AttachEvents();
         }
 
         private void InitializeMenus()
@@ -253,14 +246,21 @@ namespace VsExt.AutoShelve
 
         private void MenuItemCallbackAutoShelveRunState(object sender, System.EventArgs e)
         {
-            _isPaused = false; // this prevents un-pause following a manual start/stop
-            if (_autoShelve.IsRunning)
+            try
             {
-                _autoShelve.Stop();
+                _isPaused = false; // this prevents un-pause following a manual start/stop
+                if (_autoShelve.IsRunning)
+                {
+                    _autoShelve.Stop();
+                }
+                else
+                {
+                    _autoShelve.Start();
+                }
             }
-            else
+            catch
             {
-                _autoShelve.Start();
+                // swallow exceptions
             }
         }
 
@@ -315,20 +315,33 @@ namespace VsExt.AutoShelve
 
         private void ToggleMenuCommandRunStateText(object sender)
         {
-            var menuCommand = sender as OleMenuCommand;
-            if (menuCommand != null)
+            try
             {
-                if (menuCommand.CommandID.Guid == GuidList.GuidAutoShelveCmdSet)
+                var menuCommand = sender as OleMenuCommand;
+                if (menuCommand != null)
                 {
-                    menuCommand.Text = _autoShelve.IsRunning ? _menuTextRunning : _menuTextStopped;
+                    if (menuCommand.CommandID.Guid == GuidList.GuidAutoShelveCmdSet)
+                    {
+                        menuCommand.Text = _autoShelve.IsRunning ? _menuTextRunning : _menuTextStopped;
+                    }
                 }
+            }
+            catch { 
+                // swallow exceptions 
             }
         }
 
         public void WriteToActivityLog(string message, string stackTrace)
         {
-            if (_log != null)
-                _log.LogEntry(3, "VsExtAutoShelvePackage", string.Format(CultureInfo.CurrentCulture, "Message: {0} Stack Trace: {1}", message, stackTrace));
+            try
+            {
+                if (_log != null)
+                    _log.LogEntry(3, "VsExtAutoShelvePackage", string.Format(CultureInfo.CurrentCulture, "Message: {0} Stack Trace: {1}", message, stackTrace));
+            }
+            catch
+            {
+                // swallow exceptions
+            }
         }
 
         private void WriteException(Exception ex)
@@ -346,18 +359,32 @@ namespace VsExt.AutoShelve
 
         private void WriteToOutputWindow(string outputText, bool newLine = false)
         {
-            if (!string.IsNullOrWhiteSpace(_options.OutputPane))
+            try
             {
-                var oWindow = _dte.ToolWindows.OutputWindow.OutputWindowPanes.Item(_options.OutputPane);
-                oWindow.OutputString(outputText);
-                if (newLine)
-                    oWindow.OutputString(System.Environment.NewLine);
+                if (!string.IsNullOrWhiteSpace(_options.OutputPane))
+                {
+                    var oWindow = _dte.ToolWindows.OutputWindow.OutputWindowPanes.Item(_options.OutputPane);
+                    oWindow.OutputString(outputText);
+                    if (newLine)
+                        oWindow.OutputString(System.Environment.NewLine);
+                }
+            }
+            catch
+            {
+                // swallow exceptions
             }
         }
 
         private void WriteToStatusBar(string text)
         {
-            _dte.StatusBar.Text = text;
+            try
+            {
+                _dte.StatusBar.Text = text;
+            }
+            catch
+            {
+                // swallow exceptions
+            }
         }
 
         #endregion
@@ -439,15 +466,21 @@ namespace VsExt.AutoShelve
         // The bulk of the clean-up code is implemented in Dispose(bool)
         protected override void Dispose(bool disposeManaged)
         {
-            DetachEvents();
-
-            if (_solutionService != null && _solutionEventsCookie != 0)
+            try
             {
-                _solutionService.UnadviseSolutionEvents(_solutionEventsCookie);
-                _solutionEventsCookie = 0;
-                _solutionService = null;
-            }
+                DetachEvents();
 
+                if (_solutionService != null && _solutionEventsCookie != 0)
+                {
+                    _solutionService.UnadviseSolutionEvents(_solutionEventsCookie);
+                    _solutionEventsCookie = 0;
+                    _solutionService = null;
+                }
+            }
+            catch
+            {
+                // swallow exceptions
+            }
             base.Dispose(disposeManaged);
         }
 

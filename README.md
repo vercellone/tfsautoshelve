@@ -7,6 +7,10 @@
  Protect your code by guaranteeing your pending changes are always backed up to the TFS server.
 
 ---
+### v5.4
+
+Bug Fix #17 No such interface support at EnvDTE.StatusBar.set_Text(String pTextc)
+
 ### v5.3
 
 Bug Fix #15 Index was outside the bounds of the array. OR Value cannot be null. Parameter name: shelveset
