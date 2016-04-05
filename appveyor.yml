@@ -17,8 +17,8 @@
     assembly_version: "5.4.0.{build}"
 
   artifacts:
-    - path: .\VsExt.AutoShelve\bin\$(configuration)\VsExt.AutoShelve.vsix
-      name: TfsAutoShelve2015v5.4.vsix
+    - path: .\VsExt.AutoShelve\bin\$(configuration)\TfsAutoShelve2015v4.4.vsix
+      name: TfsAutoShelve2015v4.4.vsix
 
   build:
     project: VsExt.AutoShelve\VsExt.AutoShelve.csproj   # path to Visual Studio solution or project
@@ -49,7 +49,7 @@
     assembly_version: "4.3.0.{build}"
 
   artifacts:
-    - path: .\VsExt.AutoShelve\bin\$(configuration)\VsExt.AutoShelve.vsix
+    - path: .\VsExt.AutoShelve\bin\$(configuration)\TfsAutoShelve2013v4.3.vsix
       name: TfsAutoShelve2013v4.3.vsix
 
   build:

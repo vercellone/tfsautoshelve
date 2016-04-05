@@ -50,7 +50,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>VsExt.AutoShelve</RootNamespace>
-    <AssemblyName>VsExt.AutoShelve.4.2</AssemblyName>
+    <AssemblyName>TfsAutoShelve2013v4.3.vsix</AssemblyName>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>Packaging\Key.snk</AssemblyOriginatorKeyFile>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
