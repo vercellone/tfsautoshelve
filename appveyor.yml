@@ -9,7 +9,7 @@
 #---------------------------------#
 
 # version format
-version: 4.2.{build}
+version: 4.3.{build}
 
 #---------------------------------#
 #    environment configuration    #
@@ -24,7 +24,7 @@ os: Visual Studio 2015 RC
 assembly_info:
   patch: false
   file: AssemblyInfo.*
-  assembly_version: "4.2.{build}"
+  assembly_version: "4.3.{build}"
   assembly_file_version: "{version}"
   assembly_informational_version: "{version}"
 
@@ -79,7 +79,7 @@ artifacts:
 
   # pushing a single file
   - path: .\bin\$(configuration)\VsExt.AutoShelve.vsix
-    name: VsExt.AutoShelve.vsix
+    name: VsExt.AutoShelve.$(version).vsix
   # pushing a single file with environment variable in path and "Deployment name" specified
   # zips all the bin\release folder as output.zip
   #- path: .\bin\$(configuration)

@@ -7,6 +7,17 @@
 Protect your code by guaranteeing your pending changes are always backed up to the TFS server.
 
 ---
+### v4.3
+
+Merged fixes from master (VS 2015) to [VS] 2013
+- #17 No such interface supported at EnvDTE.StatusBar.set_Text(String pTextc)
+- #16 Shelvesets created with no (0) pending changes
+- #15 Index was outside the bounds of the array. OR Value cannot be null. Parameter name: 
+shelveset
+- #14 Redundant shelvesets
+- #13 "Pause while debugging" confusion
+- #12 Auto shelve once per workspace per user
+
 ### v4.2
 
 Bug Fix #11 Dispose error on close of Visual Studio (merged from master)
