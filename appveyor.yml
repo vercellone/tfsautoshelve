@@ -1,4 +1,4 @@
-#---------------------------------#
+﻿#---------------------------------#
 #   master branch configuration   #
 #---------------------------------#
 -
@@ -24,7 +24,7 @@
     project: VsExt.AutoShelve\VsExt.AutoShelve.csproj   # path to Visual Studio solution or project
     verbosity: minimal # MSBuild verbosity level quiet|minimal|normal|detailed
 
-  configuration: Release
+  configuration: Package
   deploy: off 
   os: Visual Studio 2015 # http://www.appveyor.com/docs/installed-software
   platform: Any CPU
@@ -56,7 +56,7 @@
     project: VsExt.AutoShelve\VsExt.AutoShelve.csproj   # path to Visual Studio solution or project
     verbosity: minimal # MSBuild verbosity level quiet|minimal|normal|detailed
 
-  configuration: Release
+  configuration: Package
   deploy: off 
   os: Visual Studio 2015 # http://www.appveyor.com/docs/installed-software
   platform: Any CPU
