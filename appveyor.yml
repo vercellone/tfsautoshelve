@@ -18,7 +18,7 @@
 
   artifacts:
     - path: .\VsExt.AutoShelve\bin\$(configuration)\VsExt.AutoShelve.vsix
-      name: VsExt.AutoShelve.VS2015.vsix
+      name: TfsAutoShelve2015v5.4.vsix
 
   build:
     project: VsExt.AutoShelve\VsExt.AutoShelve.csproj   # path to Visual Studio solution or project
@@ -50,7 +50,7 @@
 
   artifacts:
     - path: .\VsExt.AutoShelve\bin\$(configuration)\VsExt.AutoShelve.vsix
-      name: VsExt.AutoShelve.VS2013.vsix""
+      name: TfsAutoShelve2013v4.3.vsix
 
   build:
     project: VsExt.AutoShelve\VsExt.AutoShelve.csproj   # path to Visual Studio solution or project
