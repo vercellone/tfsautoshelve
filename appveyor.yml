@@ -17,8 +17,8 @@
     assembly_version: "6.0.0.{build}"
 
   artifacts:
-    - path: .\VsExt.AutoShelve\bin\$(configuration)\TfsAutoShelve2015v6.0.vsix
-      name: TfsAutoShelve2015v6.0.vsix
+    - path: .\VsExt.AutoShelve\bin\$(configuration)\TfsAutoShelve2017v6.0.vsix
+      name: TfsAutoShelve2017v6.0.vsix
 
   before_build:
     - nuget restore

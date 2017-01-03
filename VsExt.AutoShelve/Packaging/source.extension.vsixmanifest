@@ -9,20 +9,20 @@
     <PreviewImage>Images\AutoShelvePreview.png</PreviewImage>
   </Metadata>
   <Installation InstalledByMsi="false" AllUsers="true">
-    <InstallationTarget Id="Microsoft.VisualStudio.Pro" Version="[14.0,]" />
-    <InstallationTarget Version="[14.0,]" Id="Microsoft.VisualStudio.Ultimate" />
-    <InstallationTarget Version="[14.0,]" Id="Microsoft.VisualStudio.IntegratedShell" />
+    <InstallationTarget Id="Microsoft.VisualStudio.Pro" Version="[15.0,16.0)" />
+    <InstallationTarget Version="[15.0,16.0)" Id="Microsoft.VisualStudio.Ultimate" />
+    <InstallationTarget Version="[15.0,16.0)" Id="Microsoft.VisualStudio.IntegratedShell" />
   </Installation>
   <Dependencies>
     <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.6,]" />
-    <Dependency Id="Microsoft.VisualStudio.MPF.14.0" DisplayName="Visual Studio MPF 14.0" d:Source="Installed" Version="[14.0,]" />
+    <Dependency Id="Microsoft.VisualStudio.MPF.15.0" DisplayName="Visual Studio MPF 15.0" d:Source="Installed" Version="[15.0,16.0)" />
   </Dependencies>
   <Assets>
     <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
   </Assets>
   <Prerequisites>
-    <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[15.0,]" DisplayName="Visual Studio core editor" />
-    <Prerequisite Id="Microsoft.VisualStudio.Component.DiagnosticTools" Version="[15.0,]" DisplayName="Profiling tools" />
-    <Prerequisite Id="Microsoft.VisualStudio.Component.IntelliTrace.FrontEnd" Version="[15.0,]" DisplayName="IntelliTrace" />
+    <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[15.0,16.0)" DisplayName="Visual Studio core editor" />
+    <Prerequisite Id="Microsoft.VisualStudio.Component.DiagnosticTools" Version="[15.0,16.0)" DisplayName="Profiling tools" />
+    <Prerequisite Id="Microsoft.VisualStudio.Component.IntelliTrace.FrontEnd" Version="[15.0,16.0)" DisplayName="IntelliTrace" />
   </Prerequisites>
 </PackageManifest>
