@@ -6,6 +6,38 @@
     only:
       - master
 
+  version: 6.0.{build}
+
+  # Assembly versioning
+  assembly_info:
+    patch: true
+    file: AssemblyInfo.*
+    assembly_file_version: "6.0.0.{build}"
+    assembly_informational_version: "6.0.0.{build}"
+    assembly_version: "6.0.0.{build}"
+
+  artifacts:
+    - path: .\VsExt.AutoShelve\bin\$(configuration)\TfsAutoShelve2015v6.0.vsix
+      name: TfsAutoShelve2015v6.0.vsix
+
+  build:
+    project: VsExt.AutoShelve\VsExt.AutoShelve.csproj   # path to Visual Studio solution or project
+    verbosity: minimal # MSBuild verbosity level quiet|minimal|normal|detailed
+
+  configuration: Package
+  deploy: off 
+  os: Visual Studio 2017 RC # http://www.appveyor.com/docs/installed-software
+  platform: Any CPU
+  test: off
+
+#---------------------------------#
+#   2015 branch configuration   #
+#---------------------------------#
+-
+  branches:
+    only:
+      - 2015
+
   version: 5.4.{build}
 
   # Assembly versioning

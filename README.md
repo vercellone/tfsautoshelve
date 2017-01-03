@@ -1,34 +1,13 @@
 #tfsautoshelve
 
-<img id="171213" src="https://i1.visualstudiogallery.msdn.s-msft.com/8a8c753d-e10e-42b2-940e-2f6e8ed68d84/image/file/171213/1/vs2015_launch_partner.png" alt="Visual Studio 2015 Launch Partner" width="210" height="95"/>&nbsp;&nbsp;&nbsp;&nbsp;[![Build status](https://ci.appveyor.com/api/projects/status/ornwijwtoy41wpg6?svg=true)](https://ci.appveyor.com/project/vercellone/tfsautoshelve)
-
-##TFS Auto Shelve Extension for Visual Studio 2015
+##TFS Auto Shelve Extension for Visual Studio 2017
 
  Protect your code by guaranteeing your pending changes are always backed up to the TFS server.
 
 ---
-### v5.4
+### v6.0
 
-Bug Fix #17 No such interface support at EnvDTE.StatusBar.set_Text(String pTextc)
-
-### v5.3
-
-Bug Fix #15 Index was outside the bounds of the array. OR Value cannot be null. Parameter name: shelveset
-Bug Fix #16 Shelvesets create with no (0) pending changes
-
-### v5.2
-
-Bug Fix #14 Redundant shelvesets
-
-### v5.1
-
-Bug Fix #11 Dispose error on close of Visual Studio
-
-### v5.0
-
-Visual Studio 2015 compatible version.
-
-### v4.0
+Visual Studio 2017 compatible version.
 
 1. Auto shelving occurs at the configured intervals if you have _any_ solution open (source controlled or not) in one or more VS instance with 2 exceptions, of which both require a manual toggle to resume:
   1. You toggle it off manually.
