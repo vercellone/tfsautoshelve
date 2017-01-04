@@ -89,13 +89,13 @@
 
   <Symbols>
     <!-- This is the package guid. -->
-    <GuidSymbol name="guidAutoShelveCmdSetPkg" value="{BAEA1B9D-EDFE-41CB-A233-F9453BBAC7DA}" />
-    <GuidSymbol name="guidVSTeamTopMenu" value="{D309F791-903F-11D0-9EFC-00A0C911004F}">
+    <GuidSymbol name="guidAutoShelveCmdSetPkg" value="{8016DBDE-8330-4802-9B1C-1E0AD1102A24}" />
+    <GuidSymbol name="guidVSTeamTopMenu" value="{2BF4151D-6587-4F92-B18E-443D8F940196}">
       <IDSymbol name="IDM_VS_MENU_TEAM" value="1792" />
     </GuidSymbol>
 
     <!-- This is the guid used to group the menu commands together -->
-    <GuidSymbol name="guidAutoShelveCmdSet" value="{E06C3308-36F4-417E-8845-CF32B80D0FB5}">
+    <GuidSymbol name="guidAutoShelveCmdSet" value="{4375B001-B852-4FA2-BD87-3106ACECDBBF}">
       <IDSymbol name="AutoShelveGroup" value="0x1020" />
       <IDSymbol name="cmdidAutoShelve" value="0x0256" />
       <IDSymbol name="cmdidAutoShelveNow" value="0x0512" />

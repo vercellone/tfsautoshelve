@@ -4,8 +4,8 @@ namespace VsExt.AutoShelve.Packaging
 {
     static class GuidList
     {
-        public const string GuidAutoShelvePkgString = "BAEA1B9D-EDFE-41CB-A233-F9453BBAC7DA";
-        private const string GuidAutoShelveCmdSetString = "E06C3308-36F4-417E-8845-CF32B80D0FB5";
+        public const string GuidAutoShelvePkgString = "8016DBDE-8330-4802-9B1C-1E0AD1102A24";
+        private const string GuidAutoShelveCmdSetString = "4375B001-B852-4FA2-BD87-3106ACECDBBF";
 
         public static readonly Guid GuidAutoShelveCmdSet = new Guid(GuidAutoShelveCmdSetString);
     };
