@@ -90,7 +90,7 @@
   <Symbols>
     <!-- This is the package guid. -->
     <GuidSymbol name="guidAutoShelveCmdSetPkg" value="{8016DBDE-8330-4802-9B1C-1E0AD1102A24}" />
-    <GuidSymbol name="guidVSTeamTopMenu" value="{2BF4151D-6587-4F92-B18E-443D8F940196}">
+    <GuidSymbol name="guidVSTeamTopMenu" value="{D309F791-903F-11D0-9EFC-00A0C911004F}">
       <IDSymbol name="IDM_VS_MENU_TEAM" value="1792" />
     </GuidSymbol>
 
