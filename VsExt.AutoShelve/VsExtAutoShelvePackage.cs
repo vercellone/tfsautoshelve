@@ -166,6 +166,10 @@ namespace VsExt.AutoShelve
                 // Initialize Tools->Options Page
                 _options = (OptionsPageGeneral)GetDialogPage(typeof(OptionsPageGeneral));
 
+                //var sccProvider = (Microsoft.VisualStudio.Shell.Interop.IVsGetScciProviderInterface)GetService(typeof(IVsRegisterScciProvider));
+                //var sccProvider = (IVsRegisterScciProvider)GetGlobalService(typeof(IVsRegisterScciProvider));
+                //sccProvider.GetSourceControlProviderID(out var pGuid);
+
                 // Initialize Solution Service Events
                 _solutionService = (IVsSolution2)GetGlobalService(typeof(SVsSolution));
                 if (_solutionService != null)
