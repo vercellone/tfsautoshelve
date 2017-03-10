@@ -5,6 +5,11 @@
  Protect your code by guaranteeing your pending changes are always backed up to the TFS server.
 
 ---
+### v6.1
+
+Removed IntelliTrace PreRequisite because it was blocking installation for VS Community and Professional edition users.
+
+---
 ### v6.0
 
 Visual Studio 2017 compatible version.

@@ -32,7 +32,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>VsExt.AutoShelve</RootNamespace>
-    <AssemblyName>TfsAutoShelve2017v6.0</AssemblyName>
+    <AssemblyName>TfsAutoShelve2017v6.1</AssemblyName>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>Packaging\Key.snk</AssemblyOriginatorKeyFile>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
