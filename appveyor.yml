@@ -6,19 +6,19 @@
     only:
       - master
 
-  version: 6.1.{build}
+  version: 6.2.{build}
 
   # Assembly versioning
   assembly_info:
     patch: true
     file: AssemblyInfo.*
-    assembly_file_version: "6.1.0.{build}"
-    assembly_informational_version: "6.1.0.{build}"
-    assembly_version: "6.1.0.{build}"
+    assembly_file_version: "6.2.0.{build}"
+    assembly_informational_version: "6.2.0.{build}"
+    assembly_version: "6.2.0.{build}"
 
   artifacts:
-    - path: .\VsExt.AutoShelve\bin\$(configuration)\TfsAutoShelve2017v6.1.vsix
-      name: TfsAutoShelve2017v6.1.vsix
+    - path: .\VsExt.AutoShelve\bin\$(configuration)\TfsAutoShelve2017v6.2.vsix
+      name: TfsAutoShelve2017v6.2.vsix
 
   build:
     project: VsExt.AutoShelve\VsExt.AutoShelve.csproj   # path to Visual Studio solution or project
