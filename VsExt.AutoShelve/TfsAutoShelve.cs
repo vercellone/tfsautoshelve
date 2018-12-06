@@ -206,7 +206,7 @@ namespace VsExt.AutoShelve
                         autoShelveEventArg.ShelvesetChangeCount = numPending;
 
                         // Build a new, valid shelve set name
-                        var setname = string.Format(ShelvesetName, workspace.Name, workspace.OwnerName, DateTime.Now, workspace.OwnerName.GetDomain(), workspace.OwnerName.GetLogin());
+                        var setname = string.Format(ShelvesetName, workspace.Name, workspace.OwnerName, DateTime.Now.ToString("s"), workspace.OwnerName.GetDomain(), workspace.OwnerName.GetLogin());
                         setname = CleanShelvesetName(setname);
 
                         // Actually create a new Shelveset 
