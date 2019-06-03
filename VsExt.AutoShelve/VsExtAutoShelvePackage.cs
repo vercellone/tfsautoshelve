@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Windows.Forms;
+using System.Threading;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio.Shell;
@@ -14,12 +12,11 @@ using Microsoft.VisualStudio.Shell.Interop;
 using VsExt.AutoShelve.EventArgs;
 using VsExt.AutoShelve.IO;
 using VsExt.AutoShelve.Packaging;
+
 using Task = System.Threading.Tasks.Task;
 
 namespace VsExt.AutoShelve
 {
-    using System.Threading;
-
     /// <summary>
     /// This is the class that implements the package exposed by this assembly.
     ///
