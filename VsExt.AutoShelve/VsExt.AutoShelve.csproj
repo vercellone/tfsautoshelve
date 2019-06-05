@@ -23,7 +23,7 @@
     <UseCodebase>true</UseCodebase>
     <TargetFrameworkProfile />
     <GetVsixSourceItemsDependsOn>$(GetVsixSourceItemsDependsOn);IncludeNuGetResolvedAssets</GetVsixSourceItemsDependsOn>
-    <ReferencePath>$(DevEnvDir)CommonExtensions\Microsoft\TeamFoundation\Team Explorer\</ReferencePath>
+    <ReferencePath>$(MSBuildThisFileDirectory)lib\</ReferencePath>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
