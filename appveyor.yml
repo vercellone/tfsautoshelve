@@ -20,8 +20,8 @@
     - path: .\VsExt.AutoShelve\bin\$(configuration)\TfsAutoShelve2019v7.0.vsix
       name: TfsAutoShelve2019v7.0.vsix
 
-before_build:
-  - nuget restore
+  before_build:
+    - nuget restore
 
   build:
     project: VsExt.AutoShelve\VsExt.AutoShelve.csproj   # path to Visual Studio solution or project
