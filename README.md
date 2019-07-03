@@ -1,13 +1,13 @@
 #tfsautoshelve
 
-##TFS Auto Shelve Extension for Visual Studio 2019
+##TFS Auto Shelve Extension for Visual Studio
 
  Protect your code by guaranteeing your pending changes are always backed up to the TFS server.
 
 ---
 ### v7.0
 
-Visual Studio 2019 compatible version.
+Visual Studio 2017+2019 compatible version.
 
 ---
 ### v6.2
