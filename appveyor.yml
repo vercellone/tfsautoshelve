@@ -17,8 +17,8 @@
     assembly_version: "7.0.0.{build}"
 
   artifacts:
-    - path: .\VsExt.AutoShelve\bin\$(configuration)\TfsAutoShelve2019v7.0.vsix
-      name: TfsAutoShelve2019v7.0.vsix
+    - path: .\VsExt.AutoShelve\bin\$(configuration)\TfsAutoShelve.7.0.vsix
+      name: TfsAutoShelve.7.0.vsix
 
   before_build:
     - nuget restore
