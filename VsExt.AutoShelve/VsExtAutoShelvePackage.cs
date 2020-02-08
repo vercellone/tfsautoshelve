@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Windows.Forms;
+using System.Threading;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio.Shell;
@@ -14,6 +12,8 @@ using Microsoft.VisualStudio.Shell.Interop;
 using VsExt.AutoShelve.EventArgs;
 using VsExt.AutoShelve.IO;
 using VsExt.AutoShelve.Packaging;
+
+using Task = System.Threading.Tasks.Task;
 
 namespace VsExt.AutoShelve
 {
@@ -28,8 +28,8 @@ namespace VsExt.AutoShelve
     /// register itself and its components with the shell.
     /// </summary>
     // This attribute tells the PkgDef creation utility (CreatePkgDef.exe) that this class is a package.
-    [PackageRegistration(UseManagedResourcesOnly = true)]
-    [ProvideAutoLoad(UIContextGuids80.SolutionExists)] // https://msdn.microsoft.com/en-us/library/microsoft.visualstudio.shell.interop.uicontextguids80.aspx
+    [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
+    [ProvideAutoLoad(UIContextGuids80.SolutionExists, PackageAutoLoadFlags.BackgroundLoad)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
     // This attribute is used to include custom options in the Tools->Options dialog
     [ProvideOptionPage(typeof(OptionsPageGeneral), "TFS Auto Shelve", "General", 101, 106, true)]
@@ -38,7 +38,7 @@ namespace VsExt.AutoShelve
     // in the Help/About dialog of Visual Studio.
     [InstalledProductRegistration("#110", "#112", "6.2", IconResourceID = 400)]
     [Guid(GuidList.GuidAutoShelvePkgString)]
-    public class VsExtAutoShelvePackage : Package, IVsSolutionEvents, IDisposable
+    public class VsExtAutoShelvePackage : AsyncPackage, IVsSolutionEvents, IDisposable
     {
 
         private IAutoShelveService _autoShelve;
@@ -150,7 +150,22 @@ namespace VsExt.AutoShelve
         /// Initialization of the package; this method is called right after the package is sited, so this is the place
         /// where you can put all the initialization code that rely on services provided by VisualStudio.
         /// </summary>
-        protected override void Initialize()
+        /// <param name="cancellationToken">A cancellation token to monitor for initialization cancellation, which can occur when VS is shutting down.</param>
+        /// <param name="progress">A provider for progress updates.</param>
+        /// <returns>A task representing the async work of package initialization, or an already completed task if there is none. Do not return null from this method.</returns>
+        protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
+        {
+            // When initialized asynchronously, the current thread may be a background thread at this point.
+            // Do any initialization that requires the UI thread after switching to the UI thread.
+            await this.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
+            await this.InitializeAsync(this);
+        }
+
+        /// <summary>
+        /// Initialization of the package; this method is called right after the package is sited, so this is the place
+        /// where you can put all the initialization code that rely on services provided by VisualStudio.
+        /// </summary>
+        private async Task InitializeAsync(AsyncPackage package)
         {
             try
             {
@@ -224,6 +239,7 @@ namespace VsExt.AutoShelve
                 _autoShelve.TimerInterval = _options.TimerSaveInterval;
             }
             AttachEvents();
+            this._autoShelve.Start();
         }
 
         private void InitializeMenus()

@@ -6,6 +6,42 @@
     only:
       - master
 
+  version: 7.0.{build}
+
+  # Assembly versioning
+  assembly_info:
+    patch: true
+    file: AssemblyInfo.*
+    assembly_file_version: "7.0.0.{build}"
+    assembly_informational_version: "7.0.0.{build}"
+    assembly_version: "7.0.0.{build}"
+
+  artifacts:
+    - path: .\VsExt.AutoShelve\bin\$(configuration)\TfsAutoShelve.7.0.vsix
+      name: TfsAutoShelve.7.0.vsix
+
+  before_build:
+    - nuget restore
+
+  build:
+    project: VsExt.AutoShelve\VsExt.AutoShelve.csproj   # path to Visual Studio solution or project
+    verbosity: minimal # MSBuild verbosity level quiet|minimal|normal|detailed
+
+  configuration: Package
+  deploy: off 
+  os: Visual Studio 2019 # http://www.appveyor.com/docs/installed-software
+  platform: Any CPU
+  test: off
+
+
+#---------------------------------#
+#   2017 branch configuration     #
+#---------------------------------#
+-
+  branches:
+    only:
+      - 2017
+
   version: 6.2.{build}
 
   # Assembly versioning
@@ -26,12 +62,12 @@
 
   configuration: Package
   deploy: off 
-  os: Visual Studio 2017 RC # http://www.appveyor.com/docs/installed-software
+  os: Visual Studio 2017 # http://www.appveyor.com/docs/installed-software
   platform: Any CPU
   test: off
 
 #---------------------------------#
-#   2015 branch configuration   #
+#   2015 branch configuration     #
 #---------------------------------#
 -
   branches:
@@ -62,7 +98,7 @@
   platform: Any CPU
   test: off
 
-  #---------------------------------#
+#---------------------------------#
 #    2013 branch configuration    #
 #---------------------------------#
 -
