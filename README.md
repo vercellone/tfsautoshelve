@@ -5,7 +5,7 @@
  Protect your code by guaranteeing your pending changes are always backed up to the TFS server.
 
 ---
-### v7.1
+### v7.1 - [Download](https://github.com/F11ppy/tfsautoshelve/tree/master/VSIXReleases/TfsAutoShelve.7.1.vsix)
 
 Visual Studio 2022 compatible version.
 
