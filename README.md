@@ -5,6 +5,14 @@
  Protect your code by guaranteeing your pending changes are always backed up to the TFS server.
 
 ---
+### v7.1 - [Download](https://github.com/F11ppy/tfsautoshelve/tree/master/VSIXReleases/TfsAutoShelve.7.1.vsix)
+
+Visual Studio 2022 compatible version.
+
+[F11ppy](https://github.com/F11ppy): I only updated the references and install targets to get it running with VS 2022. This worked for me, but I can't guarantee everything is working or it's neatly done!
+Maybe [@vercellone](https://github.com/vercellone) will merge these changes or update the solution (in the right way); I'm new to GitHub and not sure how everything is working here. :)
+
+---
 ### v7.0
 
 Visual Studio 2017+2019 compatible version.
